@@ -3,6 +3,7 @@ module RAGTools
 using LinearAlgebra, SparseArrays, Unicode, Snowball
 using PromptingTools
 using PromptingTools.Experimental.RAGTools
+using FlashRank
 
 ## Re-export PromptingTools
 export aigenerate, aiembed, aiclassify, aiextract, aiscan, aiimage
@@ -10,7 +11,7 @@ export AIMessage
 export aitemplates, AITemplate
 export AICode
 
-## Export RAG specific functionality
+## Export RAG specific functionality
 export getpropertynested, setpropertynested
 export ChunkIndex, ChunkKeywordsIndex, ChunkEmbeddingsIndex, CandidateChunks, RAGResult
 export MultiIndex

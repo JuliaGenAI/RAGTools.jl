@@ -3,6 +3,7 @@ module RAGTools
 using LinearAlgebra, SparseArrays, Unicode, Snowball
 using PromptingTools
 using PromptingTools.Experimental.RAGTools
+using FlashRank
 
 ## Re-export PromptingTools
 export aigenerate, aiembed, aiclassify, aiextract, aiscan, aiimage

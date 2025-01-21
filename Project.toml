@@ -13,11 +13,13 @@ Unicode = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [compat]
 Aqua = "0.8"
+FlashRank = "0.4.1"
 LinearAlgebra = "1"
 PromptingTools = "0.69.1"
 Snowball = "0.1"
 SparseArrays = "1"
 Test = "1"
+Unicode = "1"
 julia = "1.10"
 
 [extras]

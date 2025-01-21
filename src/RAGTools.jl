@@ -10,7 +10,7 @@ export AIMessage
 export aitemplates, AITemplate
 export AICode
 
-## Export RAG specific functionality
+## Export RAG specific functionality
 export getpropertynested, setpropertynested
 export ChunkIndex, ChunkKeywordsIndex, ChunkEmbeddingsIndex, CandidateChunks, RAGResult
 export MultiIndex

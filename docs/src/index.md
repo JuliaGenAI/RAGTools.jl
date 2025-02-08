@@ -6,7 +6,7 @@ CurrentModule = RAGTools
 
 RAGTools.jl is a battle-tested package for building Retrieval-Augmented Generation (RAG) applications in Julia. Originally part of [PromptingTools.jl](https://svilupp.github.io/PromptingTools.jl/dev/), it has been carved out into a standalone package after proving its value in production use cases for over a year.
 
-The package focuses on high-performance, in-memory RAG pipelines that leverage Julia's speed to avoid the complexity of cloud-hosted vector databases. It seamlessly integrates with PromptingTools.jl to support a wide range of AI models and providers. However, if you need vector database support, you can simply overload the necessary functions in the pipeline (see the [RAG Interface](interface.md) for more details).
+The package focuses on high-performance, in-memory RAG pipelines that leverage Julia's speed to avoid the complexity of cloud-hosted vector databases. It seamlessly integrates with PromptingTools.jl to support a wide range of AI models and providers. However, if you need vector database support, you can simply overload the necessary functions in the pipeline (see the [RAG Interface](#RAG Interface) section for more details).
 
 If you're curious about some specific features, check out the [Features](#features) section at the bottom of the page.
 
@@ -87,7 +87,7 @@ result = retrieve(index, question)  # Get relevant chunks
 result = generate!(index, result)   # Generate answer
 ```
 
-For more advanced usage, see the [RAG Interface](interface.md) section that describes the different steps in the pipeline and how to customize them.
+For more advanced usage, see the [RAG Interface](#RAG Interface) section that describes the different steps in the pipeline and how to customize them.
 
 ## "Citation" Annotations
 

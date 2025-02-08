@@ -15,7 +15,7 @@ This system is designed for information retrieval and response generation, struc
 The corresponding functions are `build_index`, `retrieve`, and `generate!`, respectively.
 Here is the high-level diagram that shows the signature of the main functions:
 
-![RAG Diagram High-level](../diagrams/rag_diagram_highlevel.png)
+![RAG Diagram High-level](diagrams/rag_diagram_highlevel.png)
 
 Notice that the first argument is a custom type for multiple dispatch. 
 In addition, observe the "kwargs" names, that's how the keyword arguments for each function are passed down from the higher-level functions (eg, `build_index(...; chunker_kwargs=(; separators=...)))`). It's the simplest way to customize some step of the pipeline (eg, set a custom model with a `model` kwarg or prompt template with `template` kwarg).
@@ -38,7 +38,7 @@ The overarching principles are:
 
 ### RAG Diagram
 
-![RAG Diagram Detailed](../diagrams/rag_diagram_detailed.png)
+![RAG Diagram Detailed](diagrams/rag_diagram_detailed.png)
 
 **The main functions are**:
 

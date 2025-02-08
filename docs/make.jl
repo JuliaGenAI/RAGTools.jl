@@ -8,9 +8,10 @@ makedocs(;
     authors = "J S <49557684+svilupp@users.noreply.github.com> and contributors",
     sitename = "RAGTools.jl",
     format = Documenter.HTML(;
-        canonical = "https://svilupp.github.io/RAGTools.jl",
+        canonical = "https://github.com/JuliaGenAI/RAGTools.jl",
         edit_link = "main",
-        assets = String[]
+        assets = String[],
+        size_threshold = 5 * 2^20
     ),
     pages = [
         "Home" => "index.md",
@@ -21,6 +22,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo = "github.com/svilupp/RAGTools.jl",
+    repo = "github.com/JuliaGenAI/RAGTools.jl",
     devbranch = "main"
 )

@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.1.1]
+
+### Fixed
+- Fixed `preprocess_tokens`, `get_tags`, and `get_embeddings` to not trigger package extension checks (leftover from carve out from PromptingTools)
+- Clean up docs references to `PromptingTools.Experimental.RAGTools`
+
 ## [0.1.0]
 
 ### Added

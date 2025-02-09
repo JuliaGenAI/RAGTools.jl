@@ -1,7 +1,7 @@
 name = "RAGTools"
 uuid = "16ddad29-bbe8-45a7-857d-3d9514eb0023"
 authors = ["J S <49557684+svilupp@users.noreply.github.com> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"

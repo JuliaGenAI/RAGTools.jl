@@ -1,14 +1,14 @@
-using RAG: _check_aiextract_capability,
-           vcat_labeled_matrices, hcat_labeled_matrices
-using RAG: tokenize, trigrams, trigrams_hashed
-using RAG: token_with_boundaries, text_to_trigrams,
-           text_to_trigrams_hashed
-using RAG: split_into_code_and_sentences
-using RAG: getpropertynested, setpropertynested,
-           merge_kwargs_nested
-using RAG: pack_bits, unpack_bits, preprocess_tokens,
-           reciprocal_rank_fusion, score_to_unit_scale,
-           hcat_truncate
+using RAGTools: _check_aiextract_capability,
+                vcat_labeled_matrices, hcat_labeled_matrices
+using RAGTools: tokenize, trigrams, trigrams_hashed
+using RAGTools: token_with_boundaries, text_to_trigrams,
+                text_to_trigrams_hashed
+using RAGTools: split_into_code_and_sentences
+using RAGTools: getpropertynested, setpropertynested,
+                merge_kwargs_nested
+using RAGTools: pack_bits, unpack_bits, preprocess_tokens,
+                reciprocal_rank_fusion, score_to_unit_scale,
+                hcat_truncate
 
 @testset "_check_aiextract_capability" begin
     @test _check_aiextract_capability("gpt-3.5-turbo") == nothing

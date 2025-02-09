@@ -1,4 +1,4 @@
-module RAG
+module RAGTools
 
 using LinearAlgebra, SparseArrays, Unicode, Snowball
 using PromptingTools

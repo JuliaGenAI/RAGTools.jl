@@ -266,6 +266,10 @@ function get_embeddings(embedder::BatchEmbedder, docs::AbstractVector{<:Abstract
     @assert !isempty(docs) "The list of docs to get embeddings from should not be empty."
 
     ## check if extension is available
+    ext = Base.get_extension(PromptingTools, :RAGToolsExperimentalExt)
+    if isnothing(ext)
+        error("You need to also import LinearAlgebra, Unicode, SparseArrays to use this function")
+    end
     verbose && @info "Embedding $(length(docs)) documents..."
     # Notice that we embed multiple docs at once, not one by one
     # OpenAI supports embedding multiple documents to reduce the number of API calls/network latency time
@@ -527,6 +531,11 @@ function get_tags(tagger::OpenTagger, docs::AbstractVector{<:AbstractString};
         cost_tracker = Threads.Atomic{Float64}(0.0),
         kwargs...)
     _check_aiextract_capability(model)
+    ## check if extension is available
+    ext = Base.get_extension(PromptingTools, :RAGToolsExperimentalExt)
+    if isnothing(ext)
+        error("You need to also import LinearAlgebra, Unicode, and SparseArrays to use this function")
+    end
     verbose && @info "Extracting metadata from $(length(docs)) documents..."
     tags_extracted = asyncmap(docs) do docs_chunk
         try

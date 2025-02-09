@@ -1,4 +1,4 @@
-# # Building a Simple Retrieval-Augmented Generation (RAG) System with RAG
+# # Building a Simple Retrieval-Augmented Generation (RAG) System with RAGTools
 
 # Let's build a Retrieval-Augmented Generation (RAG) chatbot, tailored to navigate and interact with the DataFrames.jl documentation. 
 # "RAG" is probably the most common and valuable pattern in Generative AI at the moment.
@@ -8,7 +8,7 @@
 # Note: You must first import `LinearAlgebra`, `SparseArrays`, and `Unicode` to use this example!
 
 ## Imports
-using RAG
+using RAGTools
 using JSON3, Serialization, DataFramesMeta
 using Statistics: mean
 

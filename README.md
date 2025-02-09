@@ -1,12 +1,12 @@
-# RAG.jl
+# RAGTools.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliagenai.github.io/RAG.jl/stable/) 
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliagenai.github.io/RAG.jl/dev/) 
-[![Build Status](https://github.com/JuliaGenAI/RAG.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaGenAI/RAG.jl/actions/workflows/CI.yml?query=branch%3Amain) 
-[![Coverage](https://codecov.io/gh/JuliaGenAI/RAG.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaGenAI/RAG.jl) 
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliagenai.github.io/RAGTools.jl/stable/) 
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliagenai.github.io/RAGTools.jl/dev/) 
+[![Build Status](https://github.com/JuliaGenAI/RAGTools.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaGenAI/RAGTools.jl/actions/workflows/CI.yml?query=branch%3Amain) 
+[![Coverage](https://codecov.io/gh/JuliaGenAI/RAGTools.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaGenAI/RAGTools.jl) 
 [![Aqua](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
-RAG.jl is a battle-tested package for building Retrieval-Augmented Generation (RAG) applications in Julia. Originally a sub-module RAGTools in [PromptingTools.jl](https://svilupp.github.io/PromptingTools.jl/dev/), it has been carved out into a standalone package after proving its value in production use cases for over a year.
+RAGTools.jl is a battle-tested package for building Retrieval-Augmented Generation (RAG) applications in Julia. Originally part of [PromptingTools.jl](https://svilupp.github.io/PromptingTools.jl/dev/), it has been carved out into a standalone package after proving its value in production use cases for over a year.
 
 The package focuses on high-performance, in-memory RAG pipelines that leverage Julia's speed to avoid the complexity of cloud-hosted vector databases. It seamlessly integrates with PromptingTools.jl to support a wide range of AI models and providers. However, if you need vector database support, you can simply overload the necessary functions in the pipeline.
 
@@ -14,7 +14,7 @@ The package focuses on high-performance, in-memory RAG pipelines that leverage J
 
 Import the package:
 ```julia
-using RAG
+using RAGTools
 ```
 
 Key functions:
@@ -73,7 +73,7 @@ result = generate!(index, result)   # Generate answer
 
 ## "Citation" Annotations
 
-RAG provides powerful support annotation capabilities through its pretty-printing system. Use `pprint` to automatically analyze and display how well the generated answer is supported by the source documents:
+RAGTools provides powerful support annotation capabilities through its pretty-printing system. Use `pprint` to automatically analyze and display how well the generated answer is supported by the source documents:
 
 ```julia
 pprint(result)
@@ -122,7 +122,7 @@ print_html(result)  # Great for Genie.jl/Stipple.jl applications
 
 ## Features
 
-RAG.jl offers a rich set of features for building production-ready RAG applications:
+RAGTools.jl offers a rich set of features for building production-ready RAG applications:
 
 1. **Simple One-Line RAG**
 - Quick setup with `build_index` and `airag` functions
@@ -229,5 +229,5 @@ RAG.jl offers a rich set of features for building production-ready RAG applicati
 
 ## Questions?
 
-Feel free to open an issue on the [GitHub repository](https://github.com/JuliaGenAI/RAG.jl/issues) if you have any questions or feedback.
+Feel free to open an issue on the [GitHub repository](https://github.com/JuliaGenAI/RAGTools.jl/issues) if you have any questions or feedback.
 Alternatively, ask in the `#generative-ai` channel in the JuliaLang Slack.

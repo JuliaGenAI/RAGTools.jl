@@ -1,13 +1,13 @@
-using RAG: AnnotatedNode, AbstractAnnotater,
-           AbstractAnnotatedNode,
-           set_node_style!,
-           align_node_styles!, TrigramAnnotater, Styler,
-           HTMLStyler,
-           pprint, print_html
+using RAGTools: AnnotatedNode, AbstractAnnotater,
+                AbstractAnnotatedNode,
+                set_node_style!,
+                align_node_styles!, TrigramAnnotater, Styler,
+                HTMLStyler,
+                pprint, print_html
 
-using RAG: trigram_support!, add_node_metadata!,
-           annotate_support, RAGResult, text_to_trigrams,
-           print_tree
+using RAGTools: trigram_support!, add_node_metadata!,
+                annotate_support, RAGResult, text_to_trigrams,
+                print_tree
 
 @testset "AnnotatedNode" begin
     # Test node creation with default values

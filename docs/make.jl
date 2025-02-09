@@ -1,12 +1,12 @@
-using RAG
+using RAGTools
 using Documenter
 
-DocMeta.setdocmeta!(RAG, :DocTestSetup, :(using RAG); recursive = true)
+DocMeta.setdocmeta!(RAGTools, :DocTestSetup, :(using RAGTools); recursive = true)
 
 makedocs(;
-    modules = [RAG],
+    modules = [RAGTools],
     authors = "J S <49557684+svilupp@users.noreply.github.com> and contributors",
-    sitename = "RAG.jl",
+    sitename = "RAGTools.jl",
     format = Documenter.HTML(;
         canonical = "https://github.com/JuliaGenAI/RAGTools.jl",
         edit_link = "main",

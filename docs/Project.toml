@@ -1,4 +1,4 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-RAGTools = "16ddad29-bbe8-45a7-857d-3d9514eb0023"
+RAG = "16ddad29-bbe8-45a7-857d-3d9514eb0023"
 FlashRank = "22cc3f58-1757-4700-bb45-2032706e5a8d"

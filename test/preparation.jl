@@ -1,18 +1,18 @@
-using RAGTools: load_text, FileChunker, TextChunker,
-                BatchEmbedder, BinaryBatchEmbedder,
-                EmbedderEltype,
-                NoTagger, PassthroughTagger, OpenTagger
-using RAGTools: AbstractTagger, AbstractChunker,
-                AbstractEmbedder, AbstractIndexBuilder
-using RAGTools: tags_extract, Tag, MaybeTags
-using RAGTools: build_tags, build_index, SimpleIndexer,
-                get_tags, get_chunks, get_embeddings,
-                get_keywords, KeywordsProcessor, NoProcessor,
-                AbstractProcessor,
-                DocumentTermMatrix, document_term_matrix, bm25
-using RAGTools: build_tags, build_index
+using RAG: load_text, FileChunker, TextChunker,
+           BatchEmbedder, BinaryBatchEmbedder,
+           EmbedderEltype,
+           NoTagger, PassthroughTagger, OpenTagger
+using RAG: AbstractTagger, AbstractChunker,
+           AbstractEmbedder, AbstractIndexBuilder
+using RAG: tags_extract, Tag, MaybeTags
+using RAG: build_tags, build_index, SimpleIndexer,
+           get_tags, get_chunks, get_embeddings,
+           get_keywords, KeywordsProcessor, NoProcessor,
+           AbstractProcessor,
+           DocumentTermMatrix, document_term_matrix, bm25
+using RAG: build_tags, build_index
 using PromptingTools: TestEchoOpenAISchema
-using RAGTools: pack_bits, BitPackedBatchEmbedder
+using RAG: pack_bits, BitPackedBatchEmbedder
 
 @testset "load_text" begin
     # from file

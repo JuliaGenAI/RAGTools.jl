@@ -1,16 +1,16 @@
 using PromptingTools: TestEchoOpenAISchema
-using RAGTools: ChunkEmbeddingsIndex,
-                CandidateChunks, MultiCandidateChunks,
-                MultiIndex, build_context, build_context!
-using RAGTools: MaybeTags, Tag, ContextEnumerator,
-                AbstractContextBuilder
-using RAGTools: SimpleAnswerer, AbstractAnswerer, answer!,
-                NoRefiner, SimpleRefiner, AbstractRefiner,
-                refine!
-using RAGTools: NoPostprocessor, AbstractPostprocessor,
-                postprocess!, SimpleGenerator,
-                AdvancedGenerator, generate!, airag, RAGConfig,
-                RAGResult
+using RAG: ChunkEmbeddingsIndex,
+           CandidateChunks, MultiCandidateChunks,
+           MultiIndex, build_context, build_context!
+using RAG: MaybeTags, Tag, ContextEnumerator,
+           AbstractContextBuilder
+using RAG: SimpleAnswerer, AbstractAnswerer, answer!,
+           NoRefiner, SimpleRefiner, AbstractRefiner,
+           refine!
+using RAG: NoPostprocessor, AbstractPostprocessor,
+           postprocess!, SimpleGenerator,
+           AdvancedGenerator, generate!, airag, RAGConfig,
+           RAGResult
 
 @testset "build_context!" begin
     index = ChunkEmbeddingsIndex(;

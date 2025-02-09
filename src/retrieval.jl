@@ -640,7 +640,7 @@ To automatically download any required models, set your
 ```julia
 using FlashRank
 
-# Wrap the model to be a valid Ranker recognized by RAGTools
+# Wrap the model to be a valid Ranker recognized by RAG
 # It will be provided to the airag/rerank function to avoid instantiating it on every call
 reranker = FlashRank.RankerModel(:mini) |> FlashRanker
 # You can choose :tiny or :mini

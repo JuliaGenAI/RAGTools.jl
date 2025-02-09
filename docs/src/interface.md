@@ -1,6 +1,6 @@
 
 ```@meta
-CurrentModule = RAGTools
+CurrentModule = RAG
 ```
 
 ## RAG Interface
@@ -23,7 +23,7 @@ In addition, observe the "kwargs" names, that's how the keyword arguments for ea
 The system is designed to be hackable and extensible at almost every entry point.
 If you want to customize the behavior of any step, you can do so by defining a new type and defining a new method for the step you're changing, eg, 
 ```julia
-PromptingTools.Experimental.RAGTools: rerank
+PromptingTools.Experimental.RAG: rerank
 
 struct MyReranker <: AbstractReranker end
 rerank(::MyReranker, index, candidates) = ...

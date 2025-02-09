@@ -1,10 +1,10 @@
 ```@meta
-CurrentModule = RAGTools
+CurrentModule = RAG
 ```
 
-# RAGTools
+# RAG
 
-RAGTools.jl is a battle-tested package for building Retrieval-Augmented Generation (RAG) applications in Julia. Originally part of [PromptingTools.jl](https://svilupp.github.io/PromptingTools.jl/dev/), it has been carved out into a standalone package after proving its value in production use cases for over a year.
+RAG.jl is a battle-tested package for building Retrieval-Augmented Generation (RAG) applications in Julia. Originally a sub-module RAGTools in [PromptingTools.jl](https://svilupp.github.io/PromptingTools.jl/dev/), it has been carved out into a standalone package after proving its value in production use cases for over a year.
 
 The package focuses on high-performance, in-memory RAG pipelines that leverage Julia's speed to avoid the complexity of cloud-hosted vector databases. It seamlessly integrates with PromptingTools.jl to support a wide range of AI models and providers. However, if you need vector database support, you can simply overload the necessary functions in the pipeline (see the [RAG Interface](#RAG Interface) section for more details).
 
@@ -14,7 +14,7 @@ If you're curious about some specific features, check out the [Features](#featur
 
 Import the package:
 ```julia
-using RAGTools
+using RAG
 ```
 
 Key functions:
@@ -91,7 +91,7 @@ For more advanced usage, see the [RAG Interface](#RAG Interface) section that de
 
 ## "Citation" Annotations
 
-RAGTools provides powerful support annotation capabilities through its pretty-printing system. Use `pprint` to automatically analyze and display how well the generated answer is supported by the source documents:
+RAG provides powerful support annotation capabilities through its pretty-printing system. Use `pprint` to automatically analyze and display how well the generated answer is supported by the source documents:
 
 ```julia
 pprint(result)
@@ -140,7 +140,7 @@ print_html(result)  # Great for Genie.jl/Stipple.jl applications
 
 ## Features
 
-RAGTools.jl offers a rich set of features for building production-ready RAG applications:
+RAG.jl offers a rich set of features for building production-ready RAG applications:
 
 1. **Simple One-Line RAG**
 - Quick setup with `build_index` and `airag` functions

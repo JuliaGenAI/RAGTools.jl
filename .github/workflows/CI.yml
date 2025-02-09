@@ -74,6 +74,6 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using RAGTools
-          DocMeta.setdocmeta!(RAGTools, :DocTestSetup, :(using RAGTools); recursive=true)
-          doctest(RAGTools)
+          using RAG
+          DocMeta.setdocmeta!(RAG, :DocTestSetup, :(using RAG); recursive=true)
+          doctest(RAG)

@@ -266,7 +266,7 @@ function get_embeddings(embedder::BatchEmbedder, docs::AbstractVector{<:Abstract
     @assert !isempty(docs) "The list of docs to get embeddings from should not be empty."
 
     ## check if extension is available
-    ext = Base.get_extension(PromptingTools, :RAGToolsExperimentalExt)
+    ext = Base.get_extension(PromptingTools, :RAGExperimentalExt)
     if isnothing(ext)
         error("You need to also import LinearAlgebra, Unicode, SparseArrays to use this function")
     end
@@ -532,7 +532,7 @@ function get_tags(tagger::OpenTagger, docs::AbstractVector{<:AbstractString};
         kwargs...)
     _check_aiextract_capability(model)
     ## check if extension is available
-    ext = Base.get_extension(PromptingTools, :RAGToolsExperimentalExt)
+    ext = Base.get_extension(PromptingTools, :RAGExperimentalExt)
     if isnothing(ext)
         error("You need to also import LinearAlgebra, Unicode, and SparseArrays to use this function")
     end

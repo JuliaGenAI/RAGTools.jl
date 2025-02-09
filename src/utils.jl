@@ -108,7 +108,7 @@ function hcat_truncate(matrices::AbstractVector{<:AbstractMatrix{T}},
         if truncate
             for col in eachcol(matrix)
                 ## We must re-normalize the truncated vectors
-                ## LinearAlgebra.normalize but imported in RAGToolsExperimentalExt
+                ## LinearAlgebra.normalize but imported in RAGExperimentalExt
                 result[:, col_offset] = normalize(@view(col[1:rows]))
                 col_offset += 1
             end

@@ -6,7 +6,7 @@
 [![Coverage](https://codecov.io/gh/JuliaGenAI/RAG.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaGenAI/RAG.jl) 
 [![Aqua](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
-RAG.jl is a battle-tested package for building Retrieval-Augmented Generation (RAG) applications in Julia. Originally part of [PromptingTools.jl](https://svilupp.github.io/PromptingTools.jl/dev/), it has been carved out into a standalone package after proving its value in production use cases for over a year.
+RAG.jl is a battle-tested package for building Retrieval-Augmented Generation (RAG) applications in Julia. Originally a sub-module RAGTools in [PromptingTools.jl](https://svilupp.github.io/PromptingTools.jl/dev/), it has been carved out into a standalone package after proving its value in production use cases for over a year.
 
 The package focuses on high-performance, in-memory RAG pipelines that leverage Julia's speed to avoid the complexity of cloud-hosted vector databases. It seamlessly integrates with PromptingTools.jl to support a wide range of AI models and providers. However, if you need vector database support, you can simply overload the necessary functions in the pipeline.
 

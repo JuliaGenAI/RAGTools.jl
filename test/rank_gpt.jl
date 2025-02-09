@@ -1,7 +1,7 @@
-using RAGTools: RankGPTResult, create_permutation_instruction,
-                extract_ranking, receive_permutation!,
-                permutation_step!, rank_sliding_window!,
-                rank_gpt
+using RAG: RankGPTResult, create_permutation_instruction,
+           extract_ranking, receive_permutation!,
+           permutation_step!, rank_sliding_window!,
+           rank_gpt
 using PromptingTools: TestEchoOpenAISchema
 
 @testset "RankGPTResult" begin

@@ -1,8 +1,8 @@
-using RAGTools: QAItem, QAEvalItem, QAEvalResult
-using RAGTools: score_retrieval_hit, score_retrieval_rank
-using RAGTools: build_qa_evals, run_qa_evals, chunks, sources
-using RAGTools: JudgeAllScores, Tag, MaybeTags, ChunkIndex,
-                RAGConfig, airag
+using RAG: QAItem, QAEvalItem, QAEvalResult
+using RAG: score_retrieval_hit, score_retrieval_rank
+using RAG: build_qa_evals, run_qa_evals, chunks, sources
+using RAG: JudgeAllScores, Tag, MaybeTags, ChunkIndex,
+           RAGConfig, airag
 
 @testset "QAEvalItem" begin
     empty_qa = QAEvalItem()

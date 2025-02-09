@@ -1,9 +1,9 @@
 
 ```@meta
-CurrentModule = RAGTools
+CurrentModule = RAG
 ```
 
-# Building a Simple Retrieval-Augmented Generation (RAG) System with RAGTools.jl
+# Building a Simple Retrieval-Augmented Generation (RAG) System with RAG.jl
 
 Let's build a Retrieval-Augmented Generation (RAG) chatbot, tailored to navigate and interact with the DataFrames.jl documentation. 
 "RAG" is probably the most common and valuable pattern in Generative AI at the moment.
@@ -11,10 +11,10 @@ Let's build a Retrieval-Augmented Generation (RAG) chatbot, tailored to navigate
 If you're not familiar with "RAG", start with this [article](https://towardsdatascience.com/add-your-own-data-to-an-llm-using-retrieval-augmented-generation-rag-b1958bf56a5a).
 
 ````julia
-using RAGTools
+using RAG
 using JSON3, Serialization, DataFramesMeta
 using Statistics: mean
-const RT = RAGTools
+const RT = RAG
 ````
 
 ## RAG in Two Lines

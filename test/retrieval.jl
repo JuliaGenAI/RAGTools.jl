@@ -1,23 +1,23 @@
 using PromptingTools: TestEchoOpenAISchema
-using RAGTools: ChunkIndex
-using RAGTools: ContextEnumerator, NoRephraser, SimpleRephraser,
-                HyDERephraser,
-                CosineSimilarity, BinaryCosineSimilarity,
-                MultiFinder, BM25Similarity,
-                NoTagFilter, AllTagFilter, AnyTagFilter,
-                SimpleRetriever, AdvancedRetriever
-using RAGTools: AbstractRephraser, AbstractTagFilter,
-                AbstractSimilarityFinder, AbstractReranker,
-                RankGPTReranker
-using RAGTools: find_closest, hamming_distance, find_tags,
-                rerank, rephrase,
-                retrieve, HasEmbeddings, MultiCandidateChunks,
-                CandidateChunks
-using RAGTools: NoReranker, CohereReranker
-using RAGTools: hamming_distance, BitPackedCosineSimilarity,
-                pack_bits, unpack_bits
-using RAGTools: bm25, max_bm25_score, document_term_matrix,
-                DocumentTermMatrix
+using RAG: ChunkIndex
+using RAG: ContextEnumerator, NoRephraser, SimpleRephraser,
+           HyDERephraser,
+           CosineSimilarity, BinaryCosineSimilarity,
+           MultiFinder, BM25Similarity,
+           NoTagFilter, AllTagFilter, AnyTagFilter,
+           SimpleRetriever, AdvancedRetriever
+using RAG: AbstractRephraser, AbstractTagFilter,
+           AbstractSimilarityFinder, AbstractReranker,
+           RankGPTReranker
+using RAG: find_closest, hamming_distance, find_tags,
+           rerank, rephrase,
+           retrieve, HasEmbeddings, MultiCandidateChunks,
+           CandidateChunks
+using RAG: NoReranker, CohereReranker
+using RAG: hamming_distance, BitPackedCosineSimilarity,
+           pack_bits, unpack_bits
+using RAG: bm25, max_bm25_score, document_term_matrix,
+           DocumentTermMatrix
 
 @testset "rephrase" begin
     # Test rephrase with NoRephraser, simple passthrough

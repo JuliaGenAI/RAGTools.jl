@@ -1,4 +1,4 @@
-using RAGTools
+using RAG
 using Test
 using SparseArrays, LinearAlgebra, Unicode, Random
 using PromptingTools
@@ -7,11 +7,11 @@ using Snowball
 using JSON3, HTTP
 using Aqua
 const PT = PromptingTools
-const RT = RAGTools
+const RT = RAG
 
-@testset "RAGTools.jl" begin
+@testset "RAG.jl" begin
     @testset "Code quality (Aqua.jl)" begin
-        Aqua.test_all(RAGTools)
+        Aqua.test_all(RAG)
     end
     @testset "Core" begin
         include("utils.jl")

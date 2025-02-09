@@ -3,8 +3,8 @@ module FlashRankPromptingToolsExt
 
 using PromptingTools
 const PT = PromptingTools
-using RAGTools
-const RT = RAGTools
+using RAG
+const RT = RAG
 using FlashRank
 
 # Define the method for reranking with it
@@ -34,7 +34,7 @@ How to use FlashRank models in your RAG pipeline:
 ```julia
 using FlashRank
 
-# Wrap the model to be a valid Ranker recognized by RAGTools (FlashRanker is the dedicated type)
+# Wrap the model to be a valid Ranker recognized by RAG (FlashRanker is the dedicated type)
 # It will be provided to the airag/rerank function to avoid instantiating it on every call
 reranker = RankerModel(:mini) |> RT.FlashRanker
 # You can choose :tiny or :mini

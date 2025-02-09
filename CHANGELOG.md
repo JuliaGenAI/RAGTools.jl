@@ -13,4 +13,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0]
 
 ### Added
-- Initial release of RAGTools.jl, simple carve-out of module RAGTools.jl from PromptingTools.jl.
+- Initial release of RAG.jl, simple carve-out of module RAG.jl from PromptingTools.jl.

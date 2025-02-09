@@ -561,7 +561,7 @@ For any non-HTML styler, it prints the content as plain text.
 See also `HTMLStyler`, `annotate_support`, and `set_node_style!` for how the styling is applied and what the arguments mean.
 
 # Examples
-Note: `RT` is an alias for `PromptingTools.Experimental.RAGTools`
+Note: `RT` is an alias for `RAGTools`
 
 Simple start directly with the `RAGResult`:
 ```julia

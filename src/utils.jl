@@ -476,12 +476,6 @@ end
 
 function preprocess_tokens(texts::Vector{<:AbstractString}, stemmer = nothing;
         stopwords::Union{Nothing, Set{String}} = nothing, min_length::Int = 3)
-    if !isnothing(stemmer)
-        ext = Base.get_extension(PromptingTools, :SnowballPromptingToolsExt)
-        if isnothing(ext)
-            error("You need to also import Snowball.jl to use this function")
-        end
-    end
     map(text -> preprocess_tokens(text, stemmer; stopwords, min_length), texts)
 end
 

@@ -7,6 +7,7 @@ using JSON3: StructTypes
 using AbstractTrees
 using AbstractTrees: PreOrderDFS
 const PT = PromptingTools
+using ProgressMeter
 
 ## Re-export PromptingTools
 using PromptingTools: aigenerate, aiembed, aiclassify, aiextract, aiscan, aiimage, @ai_str,

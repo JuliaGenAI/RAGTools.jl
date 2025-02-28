@@ -271,7 +271,9 @@ function get_embeddings(embedder::BatchEmbedder, docs::AbstractVector{<:Abstract
     # We do batch them just in case the documents are too large (targeting at most 80K characters per call)
     avg_length = sum(length.(docs)) / length(docs)
     embedding_batch_size = floor(Int, target_batch_size_length / avg_length)
-    embeddings = asyncmap(Iterators.partition(docs, embedding_batch_size);
+    partitions = Iterators.partition(docs, embedding_batch_size)
+    p = Progress(length(partitions); desc = "Embedding documents...", showspeed = true)
+    embeddings = asyncmap(partitions;
         ntasks) do docs_chunk
         msg = aiembed(docs_chunk,
             normalize;
@@ -279,6 +281,7 @@ function get_embeddings(embedder::BatchEmbedder, docs::AbstractVector{<:Abstract
             verbose = false,
             kwargs...)
         Threads.atomic_add!(cost_tracker, msg.cost) # track costs
+        verbose && next!(p)
         msg.content
     end
     ## Concat across documents and truncate if needed

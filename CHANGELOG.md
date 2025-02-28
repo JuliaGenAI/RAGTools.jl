@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Progress bar for `get_embeddings` given it can take a while for large documents (new dependency `ProgressMeter.jl`, but extremely lightweight)
 
 ### Fixed
 

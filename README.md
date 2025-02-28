@@ -1,10 +1,6 @@
 # RAGTools.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliagenai.github.io/RAGTools.jl/stable/) 
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliagenai.github.io/RAGTools.jl/dev/) 
-[![Build Status](https://github.com/JuliaGenAI/RAGTools.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaGenAI/RAGTools.jl/actions/workflows/CI.yml?query=branch%3Amain) 
-[![Coverage](https://codecov.io/gh/JuliaGenAI/RAGTools.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaGenAI/RAGTools.jl) 
-[![Aqua](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliagenai.github.io/RAGTools.jl/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliagenai.github.io/RAGTools.jl/dev/) [![Build Status](https://github.com/JuliaGenAI/RAGTools.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaGenAI/RAGTools.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/JuliaGenAI/RAGTools.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaGenAI/RAGTools.jl) [![Aqua](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
 RAGTools.jl is a battle-tested package for building Retrieval-Augmented Generation (RAG) applications in Julia. Originally part of [PromptingTools.jl](https://svilupp.github.io/PromptingTools.jl/dev/), it has been carved out into a standalone package after proving its value in production use cases for over a year.
 

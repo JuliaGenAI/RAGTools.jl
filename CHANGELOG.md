@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Progress bar for `get_embeddings` given it can take a while for large documents (new dependency `ProgressMeter.jl`, but extremely lightweight). Make sure to set kwargs to `embedder_kwargs=(;verbose=true)` to see it.
 
 ### Fixed
+
+## [0.2.0]
+
+### Added
+- Progress bar for `get_embeddings` given it can take a while for large documents (new dependency `ProgressMeter.jl`, but extremely lightweight). Make sure to set kwargs to `embedder_kwargs=(;verbose=true)` to see it.
+
+### Updated
+- Increased PromptingTools compat to v0.73
 
 ## [0.1.1]
 

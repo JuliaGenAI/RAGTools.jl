@@ -749,7 +749,10 @@ scores1 = [0.9, 0.8, 0.7, 0.6, 0.5]
 positions2 = [2, 4, 6, 8, 10]
 scores2 = [0.5, 0.6, 0.7, 0.8, 0.9]
 
-merged, scores = reciprocal_rank_fusion(positions1, scores1, positions2, scores2; k = 60)
+merged_pos, scores_dict = reciprocal_rank_fusion(positions1, scores1, positions2, scores2; k = 60)
+
+# Create a CandidateChunks from the merged positions and scores
+cc = CandidateChunks(:my_index, merged_pos, [scores_dict[pos] for pos in merged_pos])
 ```
 """
 function reciprocal_rank_fusion(

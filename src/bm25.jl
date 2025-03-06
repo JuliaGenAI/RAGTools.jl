@@ -103,7 +103,7 @@ end
 bm25(
     dtm::AbstractDocumentTermMatrix, query::AbstractVector{<:AbstractString};
     k1::Float32 = 1.2f0, b::Float32 = 0.75f0, normalize::Bool = false, normalize_max_tf::Real = 3,
-    normalize_min_doc_rel_length::Float32 = 1.0f0)
+    normalize_min_doc_rel_length::Float32 = 1.0f0, kwargs...)
 
 Scores all documents in `dtm` based on the `query`.
 
@@ -120,6 +120,7 @@ Theoretically, if you choose `normalize_max_tf` and `normalize_min_doc_rel_lengt
 - `normalize_min_doc_rel_length`: The minimum document relative length to normalize to. 0.5 is a good default.
 Ideally, pick the minimum document relative length of the corpus that is non-zero
 `min_doc_rel_length = minimum(x for x in doc_rel_length(chunkdata(key_index)) if x > 0) |> Float32`
+
 # Example
 ```
 documents = [["this", "is", "a", "test"], ["this", "is", "another", "test"], ["foo", "bar", "baz"]]
@@ -132,7 +133,6 @@ scores = bm25(dtm, query)
 Normalization is done by dividing the score by the maximum possible score (given some assumptions).
 It's useful to be get results in the same range as cosine similarity scores and when comparing different queries or documents.
 
-# Example
 ```
 documents = [["this", "is", "a", "test"], ["this", "is", "another", "test"], ["foo", "bar", "baz"]]
 dtm = document_term_matrix(documents)
@@ -149,7 +149,7 @@ scores_norm = bm25(dtm, query; normalize = true, normalize_max_tf, normalize_min
 function bm25(
         dtm::AbstractDocumentTermMatrix, query::AbstractVector{<:AbstractString};
         k1::Float32 = 1.2f0, b::Float32 = 0.75f0, normalize::Bool = false, normalize_max_tf::Real = 3,
-        normalize_min_doc_rel_length::Float32 = 0.5f0)
+        normalize_min_doc_rel_length::Float32 = 0.5f0, kwargs...)
     @assert normalize_max_tf>0 "normalize_max_tf term frequency must be positive (got $normalize_max_tf)"
     @assert normalize_min_doc_rel_length>0 "normalize_min_doc_rel_length must be positive (got $normalize_min_doc_rel_length)"
 

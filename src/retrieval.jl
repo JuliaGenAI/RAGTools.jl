@@ -65,8 +65,23 @@ Finds the closest chunks to a query embedding by measuring the BM25 similarity b
 
 Reference: [Wikipedia: BM25](https://en.wikipedia.org/wiki/Okapi_BM25).
 Implementation follows: [The Next Generation of Lucene Relevance](https://opensourceconnections.com/blog/2015/10/16/bm25-the-next-generation-of-lucene-relevation/).
+
+Fields mimic the arguments of `bm25`.
+
+# Fields
+- `k1`: The k1 parameter for BM25. Default is 1.2.
+- `b`: The b parameter for BM25. Default is 0.75.
+- `normalize`: Whether to normalize the scores. Default is false.
+- `normalize_max_tf`: The maximum term frequency to normalize to. Default is 3.
+- `normalize_min_doc_rel_length`: The minimum document relative length to normalize to. Default is 1.0.
 """
-struct BM25Similarity <: AbstractSimilarityFinder end
+@kwdef struct BM25Similarity <: AbstractSimilarityFinder
+    k1::Float32 = 1.2f0
+    b::Float32 = 0.75f0
+    normalize::Bool = false
+    normalize_max_tf::Real = 3
+    normalize_min_doc_rel_length::Float32 = 1.0f0
+end
 
 """
     MultiFinder <: AbstractSimilarityFinder 
@@ -452,7 +467,6 @@ function find_closest(
     return positions[new_positions], scores
 end
 
-function max_bm25_score end
 """
     find_closest(
         finder::BM25Similarity, dtm::AbstractDocumentTermMatrix,
@@ -468,7 +482,9 @@ function find_closest(
         finder::BM25Similarity, dtm::AbstractDocumentTermMatrix,
         query_emb::AbstractVector{<:Real}, query_tokens::AbstractVector{<:AbstractString} = String[];
         top_k::Int = 100, minimum_similarity::AbstractFloat = -1.0, kwargs...)
-    scores = bm25(dtm, query_tokens)
+    ## unroll finder kwargs, but let it be overwritten by kwargs if provided
+    finder_kwargs = [f => getfield(finder, f) for f in fieldnames(BM25Similarity)]
+    scores = bm25(dtm, query_tokens; finder_kwargs..., kwargs...)
     top_k_min = min(top_k, length(scores))
     ## Take the top_k largest because higher is better in BM25
     ## BM25 score are non-negative but unbounded (grows with number of keywords)

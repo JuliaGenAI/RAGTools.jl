@@ -637,6 +637,18 @@ No-op implementation for `rerank`, which simply passes the candidate chunks thro
 struct NoReranker <: AbstractReranker end
 
 """
+    ReciprocalRankFusionReranker <: AbstractReranker
+
+Rerank strategy using the reciprocal rank fusion algorithm for simple cases with embeddings and keywords indices referring to the same chunks. 
+A dispatch type for `rerank`.
+
+!! To be used with MultiIndex that contains embeddings and keywords indices referring to the same chunks.
+"""
+@kwdef struct ReciprocalRankFusionReranker <: AbstractReranker
+    k::Int = 60
+end
+
+"""
     CohereReranker <: AbstractReranker
 
 Rerank strategy using the Cohere Rerank API. Requires an API key. A method for `rerank`.
@@ -880,6 +892,72 @@ function rerank(
     return is_multi_cand ?
            MultiCandidateChunks(index_ids[ranked_positions], positions_, scores_) :
            CandidateChunks(index_ids, positions_, scores_)
+end
+
+### Reranking Utilities
+"""
+    reciprocal_rank_fusion(mcc::MultiCandidateChunks; k::Int = 60)
+
+Calculates joint ranking via the reciprocal rank fusion algorithm.
+Utility wrapper for hybrid MultiIndex that wraps embeddings and keywords for the SAME CHUNKS!!
+
+!! It only works for two indices with the exact same chunks and chunk positions
+
+# Example
+```julia
+# start with document positions and scores from two indices
+positions1 = [1, 3, 5, 7, 9]
+scores1 = [0.9, 0.8, 0.7, 0.6, 0.5]
+positions2 = [2, 4, 6, 8, 10]
+scores2 = [0.5, 0.6, 0.7, 0.8, 0.9]
+
+# mimic the MultiCandidateChunks struct as if it came from :index1a and :index1b
+mcc = RT.MultiCandidateChunks(
+    vcat(fill(:index1a, length(positions1)), fill(:index1b, length(positions2))),
+    vcat(positions1, positions2),
+    vcat(scores1, scores2))
+
+mcc_merged = reciprocal_rank_fusion(mcc; k = 60)
+```
+"""
+function reciprocal_rank_fusion(mcc::MultiCandidateChunks; k::Int = 60)
+    unique_index_ids = unique(mcc.index_ids)
+    @assert length(unique_index_ids)==2 "There must be exactly two indices in the MultiCandidateChunks"
+    positions1 = mcc.positions[mcc.index_ids .== unique_index_ids[1]]
+    scores1 = mcc.scores[mcc.index_ids .== unique_index_ids[1]]
+    positions2 = mcc.positions[mcc.index_ids .== unique_index_ids[2]]
+    scores2 = mcc.scores[mcc.index_ids .== unique_index_ids[2]]
+    merged_positions, scores_dict = reciprocal_rank_fusion(
+        positions1, scores1, positions2, scores2; k)
+    ## We assume all items are from index 1, because they are the same chunks
+    return MultiCandidateChunks(
+        fill(mcc.index_ids[1], length(merged_positions)),
+        merged_positions,
+        [scores_dict[pos] for pos in merged_positions])
+end
+
+function reciprocal_rank_fusion(cc1::CandidateChunks, cc2::CandidateChunks; k::Int = 60)
+    merged_positions, scores_dict = reciprocal_rank_fusion(
+        cc1.positions, cc1.scores, cc2.positions, cc2.scores; k)
+    ## We assume all items are from index 1, because they are the same chunks
+    return CandidateChunks(
+        cc1.index_id,
+        merged_positions,
+        [scores_dict[pos] for pos in merged_positions])
+end
+
+function rerank(reranker::ReciprocalRankFusionReranker,
+        index::AbstractDocumentIndex, question::AbstractString,
+        candidates::AbstractCandidateChunks;
+        verbose::Bool = false,
+        top_n::Integer = length(candidates.scores),
+        kwargs...)
+    @assert index isa MultiIndex "The index must be a MultiIndex. It must refer to the same chunks across all sub-indices."
+    @assert top_n>0 "top_n must be a positive integer."
+    @assert candidates isa MultiCandidateChunks "The candidate chunks must be a MultiCandidateChunks"
+    k = get(kwargs, :k, reranker.k)
+    mcc = reciprocal_rank_fusion(candidates; k)
+    return first(mcc, top_n)
 end
 
 ### Overall types for `retrieve`

@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.3.0]
+
+### Added
+- Added `ReciprocalRankFusionReranker` and associated `rerank` method for hybrid retrieval (MultiIndex with embeddings and keywords indices referring to the same chunks).
+
 ## [0.2.1]
 
 ### Fixed

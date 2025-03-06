@@ -13,7 +13,8 @@ using RAGTools: find_closest, hamming_distance, find_tags,
                 rerank, rephrase,
                 retrieve, HasEmbeddings, MultiCandidateChunks,
                 CandidateChunks
-using RAGTools: NoReranker, CohereReranker
+using RAGTools: NoReranker, CohereReranker, ReciprocalRankFusionReranker,
+                reciprocal_rank_fusion
 using RAGTools: hamming_distance, BitPackedCosineSimilarity,
                 pack_bits, unpack_bits
 using RAGTools: bm25, max_bm25_score, document_term_matrix,
@@ -618,6 +619,99 @@ end
     @test mcc5.index_ids |> isempty
     @test mcc5.positions |> isempty
     @test mcc5.scores |> isempty
+end
+
+@testset "reciprocal_rank_fusion" begin
+    # Test basic functionality with positions and scores
+    positions1 = [1, 3, 5, 7, 9]
+    scores1 = [0.9, 0.8, 0.7, 0.6, 0.5]
+    positions2 = [2, 4, 6, 8, 5]
+    scores2 = [0.5, 0.6, 0.7, 0.8, 0.9]
+
+    # Test the base function that works with positions and scores
+    merged_positions, scores_dict = reciprocal_rank_fusion(
+        positions1, scores1, positions2, scores2; k = 60)
+    @test merged_positions[1] == 5
+    @test scores_dict[5] > 0.0
+
+    # Check that all positions are included in the merged result
+    @test sort(merged_positions) == sort(unique(vcat(positions1, positions2)))
+
+    # Check that scores are properly calculated and stored in dictionary
+    @test length(keys(scores_dict)) == length(merged_positions)
+    @test all(0.0 .<= values(scores_dict) .<= 1.0)
+
+    # Test with CandidateChunks
+    cc1 = CandidateChunks(:index1, positions1, scores1)
+    cc2 = CandidateChunks(:index2, positions2, scores2)
+
+    merged_cc = reciprocal_rank_fusion(cc1, cc2; k = 60)
+
+    # Check the merged CandidateChunks
+    @test merged_cc.index_id == :index1
+    @test length(merged_cc.positions) == 9
+    @test length(merged_cc.scores) == 9
+    @test all(0.0 .<= merged_cc.scores .<= 1.0)
+
+    # Test with MultiCandidateChunks
+    mcc = MultiCandidateChunks(
+        vcat(fill(:index1a, length(positions1)), fill(:index1b, length(positions2))),
+        vcat(positions1, positions2),
+        vcat(scores1, scores2))
+
+    mcc_merged = reciprocal_rank_fusion(mcc; k = 60)
+
+    # Check the merged MultiCandidateChunks
+    @test mcc_merged.index_ids[1] == :index1a
+    @test all(id -> id == :index1a, mcc_merged.index_ids)
+    @test length(mcc_merged.positions) == 9
+    @test length(mcc_merged.scores) == 9
+    @test all(0.0 .<= mcc_merged.scores .<= 1.0)
+
+    # Test with different k value
+    mcc_merged_k10 = reciprocal_rank_fusion(mcc; k = 10)
+    @test length(mcc_merged_k10.positions) == 9
+
+    # Test assertion for MultiCandidateChunks with more than two indices
+    mcc_three_indices = MultiCandidateChunks(
+        vcat(fill(:index1a, 2), fill(:index1b, 2), fill(:index1c, 2)),
+        vcat([1, 2], [3, 4], [5, 6]),
+        vcat([0.9, 0.8], [0.7, 0.6], [0.5, 0.4]))
+
+    @test_throws AssertionError reciprocal_rank_fusion(mcc_three_indices)
+
+    # Test with ReciprocalRankFusionReranker
+    reranker = ReciprocalRankFusionReranker(k = 60)
+    multi_index = MultiIndex(id = :multi,
+        indexes = [
+            ChunkIndex(
+                id = :index1, chunks = ["chunk1", "chunk2", "chunk3", "chunk4", "chunk5"],
+                sources = String[]),
+            ChunkIndex(
+                id = :index2, chunks = ["chunk1", "chunk2", "chunk3", "chunk4", "chunk5"],
+                sources = String[])
+        ])
+
+    multi_candidates = MultiCandidateChunks(
+        vcat(fill(:index1, length(positions1)), fill(:index2, length(positions2))),
+        vcat(positions1, positions2),
+        vcat(scores1, scores2))
+
+    question = "test question"
+
+    # Test assertions in rerank function
+    @test_throws AssertionError rerank(reranker,
+        ChunkIndex(id = :single, chunks = String[], sources = String[]), question, multi_candidates)
+    @test_throws AssertionError rerank(reranker,
+        multi_index, question, multi_candidates; top_n = 0)
+    @test_throws AssertionError rerank(reranker,
+        multi_index, question, cc1)
+
+    # Test successful reranking
+    reranked = rerank(reranker, multi_index, question, multi_candidates; top_n = 5)
+    @test length(reranked.positions) == 5
+    @test length(reranked.scores) == 5
+    @test all(0.0 .<= reranked.scores .<= 1.0)
 end
 
 @testset "rerank" begin

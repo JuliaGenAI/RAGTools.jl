@@ -468,7 +468,7 @@ function find_closest(
         finder::BM25Similarity, dtm::AbstractDocumentTermMatrix,
         query_emb::AbstractVector{<:Real}, query_tokens::AbstractVector{<:AbstractString} = String[];
         top_k::Int = 100, minimum_similarity::AbstractFloat = -1.0, kwargs...)
-    scores = bm25(dtm, query_tokens)
+    scores = bm25(dtm, query_tokens; kwargs...)
     top_k_min = min(top_k, length(scores))
     ## Take the top_k largest because higher is better in BM25
     ## BM25 score are non-negative but unbounded (grows with number of keywords)

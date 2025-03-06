@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.2.1]
+
+### Fixed
+- Fixed `find_similar` to pass kwargs to `bm25` to allow for normalization of scores
+
 ## [0.2.0]
 
 ### Added

@@ -110,7 +110,7 @@ Previously, this struct was called `ChunkIndex`.
 """
 @kwdef struct ChunkEmbeddingsIndex{
     T1 <: AbstractString,
-    T2 <: Union{Nothing, Matrix{<:Real}},
+    T2 <: Union{Nothing, AbstractMatrix{<:Real}},
     T3 <: Union{Nothing, AbstractMatrix{<:Bool}},
     T4 <: Union{Nothing, AbstractVector}
 } <: AbstractChunkIndex

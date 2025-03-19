@@ -1,4 +1,6 @@
-### RAGResult Type and Related Functions
+"""
+This module contains the definition of the `RAGResult` type and related functions.
+"""
 
 """
     RAGResult
@@ -30,15 +32,18 @@ See also: `pprint` (pretty printing), `annotate_support` (for annotating the ans
     context::Vector{<:AbstractString} = String[]
     sources::Vector{<:AbstractString} = String[]
     emb_candidates::Union{CandidateChunks, MultiCandidateChunks} = CandidateChunks(
-        index_id = :NOTINDEX, positions = Int[], scores = Float32[])
+        index_id = :NOTINDEX, positions = Int[], scores = Float32[]
+    )
     tag_candidates::Union{Nothing, CandidateChunks, MultiCandidateChunks} = CandidateChunks(
-        index_id = :NOTINDEX, positions = Int[], scores = Float32[])
+        index_id = :NOTINDEX, positions = Int[], scores = Float32[]
+    )
     filtered_candidates::Union{CandidateChunks, MultiCandidateChunks} = CandidateChunks(
-        index_id = :NOTINDEX, positions = Int[], scores = Float32[])
+        index_id = :NOTINDEX, positions = Int[], scores = Float32[]
+    )
     reranked_candidates::Union{CandidateChunks, MultiCandidateChunks} = CandidateChunks(
-        index_id = :NOTINDEX, positions = Int[], scores = Float32[])
-    conversations::Dict{Symbol, Vector{<:AbstractMessage}} = Dict{
-        Symbol, Vector{<:AbstractMessage}}()
+        index_id = :NOTINDEX, positions = Int[], scores = Float32[]
+    )
+    conversations::Dict{Symbol, Vector{<:AbstractMessage}} = Dict{Symbol, Vector{<:AbstractMessage}}()
 end
 
 """
@@ -71,7 +76,6 @@ function Base.show(io::IO,
     dump(IOContext(io, :limit => true), t, maxdepth = 1)
 end
 
-
 """
     PT.last_message(result::RAGResult)
 
@@ -102,7 +106,6 @@ function PT.last_output(result::RAGResult)
     isnothing(msg) ? result.final_answer : msg.content
 end
 
-
 # TODO: add more customizations, eg, context itself
 """
     PT.pprint(
@@ -116,8 +119,11 @@ If `add_context` is `true`, the context will be printed as well. The `text_width
 You can provide additional keyword arguments to the annotater, eg, `add_sources`, `add_scores`, `min_score`, etc. See `annotate_support` for more details.
 """
 function PT.pprint(
-        io::IO, r::AbstractRAGResult; add_context::Bool = false,
-        text_width::Int = displaysize(io)[2], annotater_kwargs...)
+    io::IO, r::AbstractRAGResult; 
+    add_context::Bool = false,
+    text_width::Int = displaysize(io)[2], 
+    annotater_kwargs...
+)
 
     if !isempty(r.rephrased_questions)
         content = PT.wrap_string("- " * join(r.rephrased_questions, "\n- "), text_width)
@@ -150,11 +156,15 @@ end
 
 # Serialization for JSON3
 # ------------------------
+"""
+    StructTypes.StructType(::Type{RAGResult})
+"""
 StructTypes.StructType(::Type{RAGResult}) = StructTypes.Struct()
 
 """
     StructTypes.constructfrom(RAGResult, JSON3.read(tmp)) 
-Use as: StructTypes.constructfrom(RAGResult, JSON3.read(tmp)) 
+
+Use as: `StructTypes.constructfrom(RAGResult, JSON3.read(tmp))`
 """
 function StructTypes.constructfrom(::Type{RAGResult}, obj::Union{Dict, JSON3.Object})
     obj = copy(obj)

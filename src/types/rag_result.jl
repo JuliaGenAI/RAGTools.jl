@@ -1,5 +1,7 @@
 """
-This module contains the definition of the `RAGResult` type and related functions.
+    This module contains the definition of the types:
+    - `RAGResult`
+    and related functions.
 """
 
 """

@@ -180,6 +180,13 @@ abstract type AbstractCandidateChunks end
 # Main supertype for retrieval customizations
 abstract type AbstractRetrievalMethod end
 
+""" 
+    AbstractDocumentTermMatrix
+
+Abstract type for a document term matrix.
+""" 
+abstract type AbstractDocumentTermMatrix end
+
 # Main dispatch type for `retrieve`
 """
     AbstractRetriever <: AbstractRetrievalMethod

@@ -1,6 +1,15 @@
+"""
+    This module contains the definition of the types:
+    - `ChunkEmbeddingsIndex`
+    - `ChunkKeywordsIndex`
+    - `MultiIndex`
+    - `SubChunkIndex`
+    and related functions, including those for `AbstractDocumentIndex`.
+""" 
+
 
 """ 
-    AbstractDocumentIndex 
+    AbstractDocumentIndex
 
 Defined in `rag_interface.jl`.
 """
@@ -15,15 +24,19 @@ end
 function chunkdata(index::AbstractDocumentIndex, chunk_idx::AbstractVector{<:Integer})
     throw(ArgumentError("`chunkdata` not implemented for $(typeof(index)) and chunk indices: $(typeof(chunk_idx))"))
 end
+
 function embeddings(index::AbstractDocumentIndex)
     throw(ArgumentError("`embeddings` not implemented for $(typeof(index))"))
 end
+
 function tags(index::AbstractDocumentIndex)
     throw(ArgumentError("`tags` not implemented for $(typeof(index))"))
 end
+
 function tags_vocab(index::AbstractDocumentIndex)
     throw(ArgumentError("`tags_vocab` not implemented for $(typeof(index))"))
 end
+
 function extras(index::AbstractDocumentIndex)
     throw(ArgumentError("`extras` not implemented for $(typeof(index))"))
 end

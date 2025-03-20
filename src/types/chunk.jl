@@ -1,5 +1,8 @@
 """ 
-    This module contains the definition of the `CandidateChunks` type and related functions.
+    This module contains the definition of the types:
+    - `CandidateChunks`
+    - `MultiCandidateChunks`
+    and related functions, inclding those for `AbstractCandidateChunks`.
 """
 
 """ 

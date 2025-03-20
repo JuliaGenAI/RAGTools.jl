@@ -1,9 +1,10 @@
-""" 
-    AbstractDocumentTermMatrix
 
-Abstract type for a document term matrix.
 """ 
-abstract type AbstractDocumentTermMatrix end
+    This module contains the definition of the types:
+    - `DocumentTermMatrix`
+    - `SubDocumentTermMatrix`
+    and related functions, including those for `AbstractDocumentTermMatrix`.
+"""
 
 """
     DocumentTermMatrix{T<:AbstractString}

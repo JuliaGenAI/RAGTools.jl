@@ -55,6 +55,7 @@ indexids(cc::CandidateChunks) = fill(indexid(cc), length(positions(cc))) # for c
 positions(cc::CandidateChunks) = cc.positions
 scores(cc::CandidateChunks) = cc.scores
 Base.length(cc::CandidateChunks) = length(cc.positions)
+StructTypes.StructType(::Type{CandidateChunks}) = StructTypes.Struct()
 
 function Base.first(cc::CandidateChunks, k::Integer)
     sorted_idxs = sortperm(scores(cc), rev = true) |> x -> first(x, k)
@@ -180,6 +181,9 @@ indexids(cc::MultiCandidateChunks) = cc.index_ids
 positions(cc::MultiCandidateChunks) = cc.positions
 scores(cc::MultiCandidateChunks) = cc.scores
 Base.length(cc::MultiCandidateChunks) = length(positions(cc))
+StructTypes.StructType(::Type{MultiCandidateChunks}) = StructTypes.Struct()
+
+
 
 function Base.first(cc::MultiCandidateChunks, k::Integer)
     sorted_idxs = sortperm(scores(cc), rev = true) |> x -> first(x, k)
@@ -285,4 +289,39 @@ function Base.var"&"(
     end
 
     return MultiCandidateChunks(index_ids, positions_, scores_)
+end
+
+
+"""
+    StructTypes.constructfrom(
+        ::Type{T},
+        obj::Union{Dict, JSON3.Object}
+    ) where {T <: Union{CandidateChunks, MultiCandidateChunks}}
+
+Constructor for serialization - opinionated for abstract types!
+"""
+function StructTypes.constructfrom(
+    ::Type{T},
+    obj::Union{Dict, JSON3.Object}
+) where {T <: Union{CandidateChunks, MultiCandidateChunks}}
+    obj = copy(obj)
+    haskey(obj, :index_id) && (obj[:index_id] = Symbol(obj[:index_id]))
+    haskey(obj, :index_ids) && (obj[:index_ids] = convert(Vector{Symbol}, obj[:index_ids]))
+    haskey(obj, :positions) && (obj[:positions] = convert(Vector{Int}, obj[:positions]))
+    haskey(obj, :scores) && (obj[:scores] = convert(Vector{Float32}, obj[:scores]))
+    T(; obj...)
+end
+
+## function StructTypes.constructfrom(::Type{CandidateChunks}, obj::JSON3.Object)
+##     obj = copy(obj)
+##     haskey(obj, :positions) && (obj[:positions] = convert(Vector{Int}, obj[:positions]))
+##     haskey(obj, :scores) && (obj[:scores] = convert(Vector{Float32}, obj[:scores]))
+##     CandidateChunks(; obj...)
+## end
+
+function JSON3.read(
+    path::AbstractString,
+    ::Type{T}
+) where {T <: Union{CandidateChunks, MultiCandidateChunks}}
+    StructTypes.constructfrom(T, JSON3.read(path))
 end

@@ -1,0 +1,82 @@
+Test Summary:                                  | Pass  Fail  Error  Total   Time
+RAGTools.jl                                    | 1040     3      4   1047  43.6s
+  Code quality (Aqua.jl)                       |   10     1            11  13.2s
+    Method ambiguity                           |    1                   1   2.1s
+    Unbound type parameters                    |    1                   1   0.1s
+    Undefined exports                          |    1                   1   0.0s
+    Compare Project.toml and test/Project.toml |    1                   1   0.0s
+    Stale dependencies                         |          1             1   2.8s
+    Compat bounds                              |    4                   4   0.1s
+    Piracy                                     |    1                   1   0.1s
+    Persistent tasks                           |    1                   1   6.0s
+  Core                                         | 1030     2      4   1036  30.4s
+    _check_aiextract_capability                |    2                   2   0.1s
+    vcat_labeled_matrices                      |   29                  29   1.4s
+    hcat_labeled_matrices                      |   10                  10   0.4s
+    hcat_truncate                              |   26                  26   1.3s
+    tokenize                                   |    9                   9   0.0s
+    trigrams                                   |    8                   8   0.0s
+    trigrams_hashed                            |    8                   8   0.1s
+    token_with_boundaries                      |    8                   8   0.0s
+    text_to_trigrams                           |    7                   7   0.1s
+    text_to_trigrams_hashed                    |    7                   7   0.1s
+    split_into_code_and_sentences              |    9                   9   0.0s
+    getpropertynested                          |    8                   8   0.1s
+    setpropertynested                          |    5                   5   0.3s
+    merge_kwargs_nested                        |    6                   6   0.2s
+    pack_bits,unpack_bits                      |   15                  15   0.0s
+    preprocess_tokens                          |   11                  11   0.1s
+    reciprocal_rank_fusion                     |   43                  43   0.4s
+    score_to_unit_scale                        |    6                   6   0.1s
+    ChunkEmbeddingsIndex                       |   30                  30   0.4s
+    ChunkKeywordsIndex                         |   23                  23   0.8s
+    DocumentTermMatrix                         |   55                  55   1.2s
+    MultiIndex                                 |   15                  15   0.2s
+    CandidateChunks                            |   26                  26   0.5s
+    MultiCandidateChunks                       |   22                  22   0.4s
+    SubChunkIndex                              |   99                  99   1.3s
+    getindex-CandidateChunks                   |   38                  38   0.7s
+    getindex-MultiCandidateChunks              |   23                  23   0.0s
+    RAGResult                                  |   15                  15   1.7s
+    load_text                                  |    5                   5   0.0s
+    get_chunks                                 |    6                   6   0.1s
+    get_embeddings                             |   13                  13   1.6s
+    get_keywords                               |   19                  19   0.2s
+    tags_extract                               |    9                   9   0.0s
+    get_tags                                   |    5                   5   1.8s
+    build_tags                                 |   15                  15   0.2s
+    build_index                                |                 1      1   1.0s
+    RankGPTResult                              |   19                  19   0.1s
+    create_permutation_instruction             |   20                  20   0.1s
+    extract_ranking                            |   10                  10   0.2s
+    receive_permutation!                       |   10                  10   0.1s
+    permutation_step!                          |    6                   6   0.5s
+    rank_sliding_window!                       |    9                   9   0.1s
+    rank_gpt                                   |   11                  11   0.1s
+    rephrase                                   |    4                   4   0.2s
+    hamming_distance                           |   21                  21   0.1s
+    bm25                                       |   28                  28   0.4s
+    find_closest                               |   28                  28   2.4s
+    find_closest-MultiIndex                    |   30                  30   0.6s
+    find_tags                                  |   34                  34   0.8s
+    reciprocal_rank_fusion                     |   22                  22   0.3s
+    rerank                                     |    9                   9   0.1s
+    retrieve                                   |                 1      1   0.7s
+    build_context!                             |    7                   7   0.1s
+    answer!                                    |    3                   3   0.2s
+    refine!                                    |    5                   5   0.2s
+    postprocess!                               |    2                   2   0.0s
+    generate!                                  |    6                   6   0.3s
+    airag                                      |                 1      1   0.1s
+    AnnotatedNode                              |   19                  19   0.1s
+    AnnotatedNode-pprint                       |    3                   3   0.1s
+    set_node_style!                            |   15                  15   0.0s
+    align_node_styles!                         |    7                   7   0.0s
+    trigram_support!                           |   11                  11   0.1s
+    add_node_metadata!                         |   10                  10   0.1s
+    annotate_support                           |   19                  19   0.1s
+    print_html                                 |    6                   6   0.3s
+    QAEvalItem                                 |    2                   2   0.0s
+    Base.show,JSON3.write                      |    6                   6   2.4s
+    score_retrieval_hit,score_retrieval_rank   |    8                   8   0.1s
+    build_qa_evals                             |    5     2      1      8   1.3s

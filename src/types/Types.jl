@@ -14,20 +14,7 @@ include("rag_result.jl")
 # Common functions 
 # ================
 
-"""
-    getindex(ci::AbstractChunkIndex, candidate::CandidateChunks{TP, TD}, field::Symbol = :chunks; sorted::Bool = false) where {TP <: Integer, TD <: Real}
 
-Get the field from the candidate chunks.
-
-# Arguments
-- `ci::AbstractChunkIndex`: The chunk index.
-- `candidate::CandidateChunks{TP, TD}`: The candidate chunks.
-- `field::Symbol = :chunks`: The field to get.
-- `sorted::Bool = false`: Whether to sort the chunks by score.
-
-# Returns
-- The field from the candidate chunks.
-"""
 function Base.getindex(
     ci::AbstractChunkIndex,
     candidate::CandidateChunks{TP, TD},
@@ -71,11 +58,6 @@ function Base.getindex(
 end
 
 
-"""
-    getindex(mi::MultiIndex, candidate::CandidateChunks{TP, TD}, field::Symbol = :chunks; sorted::Bool = false) where {TP <: Integer, TD <: Real}
-
-Get the field from the candidate chunks.
-"""
 function Base.getindex(
     mi::MultiIndex,
     candidate::CandidateChunks{TP, TD},
@@ -95,15 +77,11 @@ function Base.getindex(
     end
 end
 
-""" 
-    getindex(ci::AbstractChunkIndex, candidate::MultiCandidateChunks, field::Symbol = :chunks; sorted::Bool = false)
-
-Dispatch for multi-candidate chunks
-"""
 function Base.getindex(
     ci::AbstractChunkIndex,
     candidate::MultiCandidateChunks{TP, TD},
-    field::Symbol = :chunks; sorted::Bool = false
+    field::Symbol = :chunks; 
+    sorted::Bool = false
 ) where {TP <: Integer, TD <: Real}
     @assert field in [:chunks, :embeddings, :chunkdata, :sources, :scores] "Only `chunks`, `embeddings`, `chunkdata`, `sources`, `scores` fields are supported for now"
 
@@ -115,16 +93,12 @@ function Base.getindex(
     getindex(ci, cc, field; sorted)
 end
 
-"""
-    getindex(mi::MultiIndex, candidate::MultiCandidateChunks, field::Symbol = :chunks; sorted::Bool = true)
 
-Pool the individual hits from different indices.
-Sorted defaults to true because we need to guarantee that potential `context` is sorted by score across different indices
-"""
 function Base.getindex(
     mi::MultiIndex,
     candidate::MultiCandidateChunks{TP, TD},
-    field::Symbol = :chunks; sorted::Bool = true
+    field::Symbol = :chunks; 
+    sorted::Bool = true
 ) where {TP <: Integer, TD <: Real}
     @assert field in [:chunks, :sources, :scores] "Only `chunks`, `sources`, and `scores` fields are supported for now"
     if sorted
@@ -143,3 +117,22 @@ function Base.getindex(
             vcat, indexes(mi))
     end
 end
+
+function Base.getindex(index::AbstractChunkIndex, id::Symbol)
+    id == indexid(index) ? index : nothing
+end
+
+function Base.getindex(index::AbstractMultiIndex, id::Symbol)
+    id == indexid(index) && return index
+    idx = findfirst(x -> indexid(x) == id, indexes(index))
+    isnothing(idx) ? nothing : indexes(index)[idx]
+end
+
+function Base.getindex(
+    ci::AbstractDocumentIndex,
+    candidate::AbstractCandidateChunks,
+    field::Symbol
+)
+    throw(ArgumentError("Not implemented"))
+end
+

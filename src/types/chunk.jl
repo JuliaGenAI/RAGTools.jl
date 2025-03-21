@@ -251,11 +251,16 @@ function Base.var"&"(
 
 	## Build the scores dict from first candidates
 	## Structure: id=>position=>max_score
-	scores_dict = Dict(id => Dict(pos => score
-								  for (pos, score, id_) in zip(
-		positions(mc1), scores(mc1), indexids(mc1))
-								  if id_ == id)
-					   for id in keep_indexes)
+	scores_dict = Dict()
+	for id in keep_indexes
+		inner_dict = Dict()
+		for (pos, score, id_) in zip(positions(mc1), scores(mc1), indexids(mc1))
+			if id_ == id
+				inner_dict[pos] = score
+			end
+		end
+		scores_dict[id] = inner_dict
+	end
 
 	## Iterate the second candidate set and directly save to output arrays
 	index_ids = Symbol[]

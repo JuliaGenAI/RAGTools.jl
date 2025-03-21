@@ -223,6 +223,29 @@ RAGTools.jl offers a rich set of features for building production-ready RAG appl
 - Multi-threading support
 - Memory-efficient data structures (eg, bit-packed binary embeddings)
 
+
+## Contribute 
+
+We welcome contributions to RAGTools.jl! Here are some guidelines to make the process smooth for everyone:
+
+### Code Formatting and Style
+
+- **JuliaFormatter.jl**: Please format your code using [JuliaFormatter.jl](https://github.com/domluna/JuliaFormatter.jl) before submitting a PR:
+  ```julia
+  using JuliaFormatter
+  format("path/to/changed/files", verbose=true)
+  ```
+Also available as a VS Code extension.
+  
+- **Style Guidelines**:
+  - Use 4 spaces for indentation
+  - Group related functionality in logical sections
+  - Add comprehensive docstrings for public functions
+
+### Commit Messages
+
+We follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) for clear and standardized commit messages.
+
 ## Questions?
 
 Feel free to open an issue on the [GitHub repository](https://github.com/JuliaGenAI/RAGTools.jl/issues) if you have any questions or feedback.

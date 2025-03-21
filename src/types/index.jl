@@ -354,6 +354,36 @@ RT.positions(sub_index)
     positions::Vector{Int}
 end
 
+Base.@propagate_inbounds function SubChunkIndex(index::SubChunkIndex, cc::CandidateChunks)
+    pos = indexid(index) == indexid(cc) ? positions(cc) : Int[]
+    intersect_pos = intersect(pos, positions(index))
+    @boundscheck let chk_vector = chunks(parent(index))
+        if !checkbounds(Bool, axes(chk_vector, 1), intersect_pos)
+            ## Avoid printing huge position arrays, show the extremas of the attempted range
+            max_pos = extrema(intersect_pos)
+            throw(BoundsError(chk_vector, max_pos))
+        end
+    end
+    return SubChunkIndex(parent(index), intersect_pos)
+end
+
+Base.@propagate_inbounds function SubChunkIndex(
+    index::SubChunkIndex, 
+    cc::MultiCandidateChunks
+)
+    valid_items = findall(==(indexid(index)), indexids(cc))
+    valid_positions = positions(cc)[valid_items]
+    intersect_pos = intersect(valid_positions, positions(index))
+    @boundscheck let chk_vector = chunks(parent(index))
+        if !checkbounds(Bool, axes(chk_vector, 1), intersect_pos)
+            ## Avoid printing huge position arrays, show the extremas of the attempted range
+            max_pos = extrema(intersect_pos)
+            throw(BoundsError(chk_vector, max_pos))
+        end
+    end
+    return SubChunkIndex(parent(index), intersect_pos)
+end
+
 indexid(index::SubChunkIndex) = parent(index) |> indexid
 positions(index::SubChunkIndex) = index.positions
 Base.parent(index::SubChunkIndex) = index.parent

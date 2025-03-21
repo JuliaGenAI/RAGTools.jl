@@ -14,11 +14,78 @@ include("rag_result.jl")
 # Common functions 
 # ================
 
+""" 
+    Base.view
+"""
+function Base.view(index::AbstractDocumentIndex, cc::AbstractCandidateChunks)
+    throw(ArgumentError("Not implemented for type $(typeof(index)) and $(typeof(cc))"))
+end
+
+Base.@propagate_inbounds function Base.view(
+    index::AbstractChunkIndex, 
+    cc::CandidateChunks
+)
+    @boundscheck let chk_vector = chunks(parent(index))
+        if !checkbounds(Bool, axes(chk_vector, 1), positions(cc))
+            ## Avoid printing huge position arrays, show the extremas of the attempted range
+            max_pos = extrema(positions(cc))
+            throw(BoundsError(chk_vector, max_pos))
+        end
+    end
+    pos = indexid(index) == indexid(cc) ? positions(cc) : Int[]
+    return SubChunkIndex(parent(index), pos)
+end
+Base.@propagate_inbounds function Base.view(index::SubChunkIndex, cc::CandidateChunks)
+    SubChunkIndex(index, cc)
+end
+
+Base.@propagate_inbounds function Base.view(
+    index::AbstractChunkIndex, 
+    cc::MultiCandidateChunks
+)
+    valid_items = findall(==(indexid(index)), indexids(cc))
+    valid_positions = positions(cc)[valid_items]
+    @boundscheck let chk_vector = chunks(parent(index))
+        if !checkbounds(Bool, axes(chk_vector, 1), valid_positions)
+            ## Avoid printing huge position arrays, show the extremas of the attempted range
+            max_pos = extrema(valid_positions)
+            throw(BoundsError(chk_vector, max_pos))
+        end
+    end
+    return SubChunkIndex(parent(index), valid_positions)
+end
+
+Base.@propagate_inbounds function Base.view(index::SubChunkIndex, cc::MultiCandidateChunks)
+    SubChunkIndex(index, cc)
+end
+
+
+"""
+    Base.getindex
+"""
+function Base.getindex(
+    ci::AbstractDocumentIndex,
+    candidate::AbstractCandidateChunks,
+    field::Symbol
+)
+    throw(ArgumentError("Not implemented"))
+end
+
+function Base.getindex(index::AbstractChunkIndex, id::Symbol)
+    id == indexid(index) ? index : nothing
+end
+
+function Base.getindex(index::AbstractMultiIndex, id::Symbol)
+    id == indexid(index) && return index
+    idx = findfirst(x -> indexid(x) == id, indexes(index))
+    isnothing(idx) ? nothing : indexes(index)[idx]
+end
 
 function Base.getindex(
     ci::AbstractChunkIndex,
     candidate::CandidateChunks{TP, TD},
-    field::Symbol = :chunks; sorted::Bool = false
+    field::Symbol = :chunks; 
+    sorted::Bool = false
 ) where {TP <: Integer, TD <: Real}
     @assert field in [:chunks, :embeddings, :chunkdata, :sources, :scores] "Only `chunks`, `embeddings`, `chunkdata`, `sources`, `scores` fields are supported for now"
     ## embeddings is a compatibility alias, use chunkdata
@@ -57,7 +124,6 @@ function Base.getindex(
     end
 end
 
-
 function Base.getindex(
     mi::MultiIndex,
     candidate::CandidateChunks{TP, TD},
@@ -93,7 +159,6 @@ function Base.getindex(
     getindex(ci, cc, field; sorted)
 end
 
-
 function Base.getindex(
     mi::MultiIndex,
     candidate::MultiCandidateChunks{TP, TD},
@@ -117,22 +182,3 @@ function Base.getindex(
             vcat, indexes(mi))
     end
 end
-
-function Base.getindex(index::AbstractChunkIndex, id::Symbol)
-    id == indexid(index) ? index : nothing
-end
-
-function Base.getindex(index::AbstractMultiIndex, id::Symbol)
-    id == indexid(index) && return index
-    idx = findfirst(x -> indexid(x) == id, indexes(index))
-    isnothing(idx) ? nothing : indexes(index)[idx]
-end
-
-function Base.getindex(
-    ci::AbstractDocumentIndex,
-    candidate::AbstractCandidateChunks,
-    field::Symbol
-)
-    throw(ArgumentError("Not implemented"))
-end
-

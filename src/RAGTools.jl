@@ -39,7 +39,7 @@ include("rag_interface.jl")
 
 export ChunkIndex, ChunkKeywordsIndex, ChunkEmbeddingsIndex, CandidateChunks, RAGResult
 export MultiIndex, SubChunkIndex, MultiCandidateChunks
-include("types.jl")
+include("types/Types.jl")
 
 export build_index, get_chunks, get_embeddings, get_keywords, get_tags, SimpleIndexer,
 	KeywordsIndexer

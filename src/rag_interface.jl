@@ -84,10 +84,10 @@ abstract type AbstractRAGConfig end
 
 # supertype for RAGDetails, return_type for retrieve and generate (and optionally airag)
 """
-    AbstractRAGResult
+	AbstractRAGResult
 
 Abstract type for the result of the RAG (Retrieval-Augmented Generation) process. 
-    
+	
 Implementations of this type should contain the necessary fields to represent the outcome of the RAG pipeline, including the original question, any rephrased versions of the question, the generated answer, and any additional context or metadata used or generated during the process.
 
 # Fields
@@ -115,7 +115,7 @@ abstract type AbstractRAGResult end
 abstract type AbstractIndexingMethod end
 
 """
-    AbstractIndexBuilder
+	AbstractIndexBuilder
 
 Abstract type for building an index with `build_index` (use to change the process / return type of `build_index`).
 
@@ -139,14 +139,14 @@ abstract type AbstractTagger <: AbstractIndexingMethod end
 abstract type AbstractDocumentIndex end
 
 """
-    AbstractMultiIndex <: AbstractDocumentIndex
+	AbstractMultiIndex <: AbstractDocumentIndex
 
 Experimental abstract type for storing multiple document indexes. Not yet implemented.
 """
 abstract type AbstractMultiIndex <: AbstractDocumentIndex end
 
 """
-    AbstractChunkIndex <: AbstractDocumentIndex
+	AbstractChunkIndex <: AbstractDocumentIndex
 
 Main abstract type for storing document chunks and their embeddings. It also stores tags and sources for each chunk.
 
@@ -164,7 +164,7 @@ abstract type AbstractChunkIndex <: AbstractDocumentIndex end
 # ## Retrieval stage
 
 """
-    AbstractCandidateChunks
+	AbstractCandidateChunks
 
 Abstract type for storing candidate chunks, ie, references to items in a `AbstractChunkIndex`.
 
@@ -182,7 +182,7 @@ abstract type AbstractRetrievalMethod end
 
 # Main dispatch type for `retrieve`
 """
-    AbstractRetriever <: AbstractRetrievalMethod
+	AbstractRetriever <: AbstractRetrievalMethod
 
 Abstract type for retrieving chunks from an index with `retrieve` (use to change the process / return type of `retrieve`).
 
@@ -211,7 +211,7 @@ abstract type AbstractGenerationMethod end
 
 # Main dispatch type for: `generate!`
 """
-    AbstractGenerator <: AbstractGenerationMethod
+	AbstractGenerator <: AbstractGenerationMethod
 
 Abstract type for generating an answer with `generate!` (use to change the process / return type of `generate`).
 

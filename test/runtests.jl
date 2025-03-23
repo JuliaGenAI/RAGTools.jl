@@ -10,17 +10,17 @@ const PT = PromptingTools
 const RT = RAGTools
 
 @testset "RAGTools.jl" begin
-    @testset "Code quality (Aqua.jl)" begin
-        Aqua.test_all(RAGTools)
-    end
-    @testset "Core" begin
-        include("utils.jl")
-        include("types.jl")
-        include("preparation.jl")
-        include("rank_gpt.jl")
-        include("retrieval.jl")
-        include("generation.jl")
-        include("annotation.jl")
-        include("evaluation.jl")
-    end
+	@testset "Code quality (Aqua.jl)" begin
+		Aqua.test_all(RAGTools)
+	end
+	@testset "Core" begin
+		include("utils.jl")
+		include("types.jl")
+		include("preparation.jl")
+		include("rank_gpt.jl")
+		include("retrieval.jl")
+		include("generation.jl")
+		include("annotation.jl")
+		include("evaluation.jl")
+	end
 end

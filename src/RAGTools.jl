@@ -11,17 +11,17 @@ using ProgressMeter
 
 ## Re-export PromptingTools
 using PromptingTools: aigenerate, aiembed, aiclassify, aiextract, aiscan, aiimage, @ai_str,
-                      @aai_str, @ai!_str, @aai!_str
+	@aai_str, @ai!_str, @aai!_str
 export aigenerate, aiembed, aiclassify, aiextract, aiscan, aiimage, @ai_str, @aai_str,
-       @ai!_str, @aai!_str
+	@ai!_str, @aai!_str
 
 using PromptingTools: ConversationMemory, aitemplates, AITemplate, AICode, pprint
 export ConversationMemory, aitemplates, AITemplate, AICode, pprint
 
 using PromptingTools: AbstractMessage, UserMessage, SystemMessage, AIMessage,
-                      UserMessageWithImages, DataMessage, AIToolRequest, ToolMessage
+	UserMessageWithImages, DataMessage, AIToolRequest, ToolMessage
 export UserMessage, SystemMessage, UserMessageWithImages, DataMessage, AIToolRequest,
-       ToolMessage, AbstractMessage, AIMessage
+	ToolMessage, AbstractMessage, AIMessage
 
 using PromptingTools: create_template, recursive_splitter
 export create_template, recursive_splitter
@@ -42,7 +42,7 @@ export MultiIndex, SubChunkIndex, MultiCandidateChunks
 include("types.jl")
 
 export build_index, get_chunks, get_embeddings, get_keywords, get_tags, SimpleIndexer,
-       KeywordsIndexer
+	KeywordsIndexer
 include("preparation.jl")
 
 include("rank_gpt.jl")

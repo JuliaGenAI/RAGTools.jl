@@ -1,7 +1,7 @@
 # Base Dependencies
 # ------------------
 using Base: parent
-using StructTypes, JSON3
+using JSON3
 
 # Files inclusion 
 # ---------------

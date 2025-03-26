@@ -135,7 +135,8 @@ end
 A sparse matrix of term frequencies and document lengths to allow calculation of BM25 similarity scores.
 """
 struct DocumentTermMatrix{
-	T1 <: AbstractMatrix{<:Real}, T2 <: AbstractString,
+	T1 <: AbstractMatrix{<:Real}, 
+	T2 <: AbstractString,
 } <: AbstractDocumentTermMatrix
 	tf::T1 # term frequency matrix, assumed to be SparseMatrixCSC{Float32, Int64}
 	vocab::Vector{T2} # vocabulary
@@ -151,7 +152,8 @@ end
 A partial view of a DocumentTermMatrix, `tf` is MATERIALIZED for performance and fewer allocations."
 """
 struct SubDocumentTermMatrix{
-	T <: DocumentTermMatrix, T1 <: AbstractMatrix{<:Real},
+	T <: DocumentTermMatrix, 
+	T1 <: AbstractMatrix{<:Real},
 } <: AbstractDocumentTermMatrix
 	parent::T
 	tf::T1 ## Materialize the sub-matrix, because it's too expensive to use otherwise (row-view of SparseMatrixCSC)

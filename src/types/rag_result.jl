@@ -60,7 +60,7 @@ end
 Two RAGResult objects are equal if all their fields are equal.
 """
 function Base.var"=="(r1::T, r2::T) where {T <: AbstractRAGResult}
-	all(f -> getfield(r1, f) == getfield(r2, f), ieldnames(T))
+	all(f -> getfield(r1, f) == getfield(r2, f), fieldnames(T))
 end
 
 """

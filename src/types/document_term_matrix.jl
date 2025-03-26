@@ -88,23 +88,6 @@ function Base.hcat(d1::AbstractDocumentTermMatrix, d2::AbstractDocumentTermMatri
 	throw(ArgumentError("A hcat not implemented for DTMs of type $(typeof(d1)) and $(typeof(d2))"))
 end
 
-function Base.hcat(d1::DocumentTermMatrix, d2::DocumentTermMatrix)
-	tf_, vocab_ = vcat_labeled_matrices(tf(d1), vocab(d1), tf(d2), vocab(d2))
-	vocab_lookup_ = Dict(t => i for (i, t) in enumerate(vocab_))
-
-	N, _ = size(tf_)
-	doc_freq = [count(x -> x > 0, col) for col in eachcol(tf_)]
-	idf = @. log(1.0f0 + (N - doc_freq + 0.5f0) / (doc_freq + 0.5f0))
-	doc_lengths = [count(x -> x > 0, row) for row in eachrow(tf_)]
-	sumdl = sum(doc_lengths)
-	doc_rel_length_ = sumdl == 0 ? zeros(Float32, N) : (doc_lengths ./ (sumdl / N))
-
-	return DocumentTermMatrix(
-		tf_, vocab_, vocab_lookup_, idf, convert(Vector{Float32}, doc_rel_length_),
-	)
-end
-
-
 function Base.view(
 	dtm::AbstractDocumentTermMatrix, doc_idx::AbstractVector{<:Integer}, token_idx,
 )
@@ -143,6 +126,22 @@ struct DocumentTermMatrix{
 	vocab_lookup::Dict{T2, Int} # lookup table for vocabulary
 	idf::Vector{Float32} # inverse document frequency
 	doc_rel_length::Vector{Float32} # document relative length |d|/avgDl
+end
+
+function Base.hcat(d1::DocumentTermMatrix, d2::DocumentTermMatrix)
+	tf_, vocab_ = vcat_labeled_matrices(tf(d1), vocab(d1), tf(d2), vocab(d2))
+	vocab_lookup_ = Dict(t => i for (i, t) in enumerate(vocab_))
+
+	N, _ = size(tf_)
+	doc_freq = [count(x -> x > 0, col) for col in eachcol(tf_)]
+	idf = @. log(1.0f0 + (N - doc_freq + 0.5f0) / (doc_freq + 0.5f0))
+	doc_lengths = [count(x -> x > 0, row) for row in eachrow(tf_)]
+	sumdl = sum(doc_lengths)
+	doc_rel_length_ = sumdl == 0 ? zeros(Float32, N) : (doc_lengths ./ (sumdl / N))
+
+	return DocumentTermMatrix(
+		tf_, vocab_, vocab_lookup_, idf, convert(Vector{Float32}, doc_rel_length_),
+	)
 end
 
 

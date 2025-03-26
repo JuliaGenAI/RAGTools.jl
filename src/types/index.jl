@@ -39,6 +39,10 @@ function extras(index::AbstractDocumentIndex)
 	throw(ArgumentError("`extras` not implemented for $(typeof(index))"))
 end
 
+function Base.vcat(i1::AbstractDocumentIndex, i2::AbstractDocumentIndex)
+	throw(ArgumentError("Not implemented"))
+end
+
 """ 
 	AbstractChunkIndex
 """
@@ -76,18 +80,18 @@ function translate_positions_to_parent(index::AbstractChunkIndex, positions::Abs
 end
 
 Base.var"=="(i1::AbstractChunkIndex, i2::AbstractChunkIndex) = false
+
 function Base.var"=="(i1::T, i2::T) where {T <: AbstractChunkIndex}
 	((sources(i1) == sources(i2)) && (tags_vocab(i1) == tags_vocab(i2)) &&
 	 (chunkdata(i1) == chunkdata(i2)) && (chunks(i1) == chunks(i2)) &&
 	 (tags(i1) == tags(i2)) && (extras(i1) == extras(i2)))
 end
 
-function Base.vcat(i1::AbstractDocumentIndex, i2::AbstractDocumentIndex)
-	throw(ArgumentError("Not implemented"))
-end
+
 function Base.vcat(i1::AbstractChunkIndex, i2::AbstractChunkIndex)
 	throw(ArgumentError("Not implemented"))
 end
+
 function Base.vcat(i1::T, i2::T) where {T <: AbstractChunkIndex}
 	tags_, tags_vocab_ = if (isnothing(tags(i1)) || isnothing(tags(i2)))
 		nothing, nothing
@@ -260,78 +264,6 @@ end
 
 
 """
-	MultiIndex
-
-Composite index that stores multiple ChunkIndex objects and their embeddings.
-
-# Fields
-- `id::Symbol`: unique identifier of each index (to ensure we're using the right index with `CandidateChunks`)
-- `indexes::Vector{<:AbstractChunkIndex}`: the indexes to be combined
-
-Use accesor `indexes` to access the individual indexes.
-
-# Examples
-
-We can create a `MultiIndex` from a vector of `AbstractChunkIndex` objects.
-```julia
-index = build_index(SimpleIndexer(), texts; chunker_kwargs = (; sources))
-index_keywords = ChunkKeywordsIndex(index) # same chunks as above but adds BM25 instead of embeddings
-
-multi_index = MultiIndex([index, index_keywords])
-```
-
-To use `airag` with different types of indices, we need to specify how to find the closest items for each index
-```julia
-# Cosine similarity for embeddings and BM25 for keywords, same order as indexes in MultiIndex
-finder = RT.MultiFinder([RT.CosineSimilarity(), RT.BM25Similarity()])
-
-# Notice that we add `processor` to make sure keywords are processed (ie, tokenized) as well
-cfg = RAGConfig(; retriever = SimpleRetriever(; processor = RT.KeywordsProcessor(), finder))
-
-# Ask questions
-msg = airag(cfg, multi_index; question = "What are the best practices for parallel computing in Julia?")
-pprint(msg) # prettify the answer
-```
-
-"""
-@kwdef struct MultiIndex <: AbstractMultiIndex
-	id::Symbol = gensym("MultiIndex")
-	indexes::Vector{<:AbstractChunkIndex} = AbstractChunkIndex[]
-end
-
-function MultiIndex(indexes::AbstractChunkIndex...)
-	MultiIndex(; indexes = collect(indexes))
-end
-function MultiIndex(indexes::AbstractVector{<:AbstractChunkIndex})
-	MultiIndex(; indexes = indexes)
-end
-
-indexes(index::MultiIndex) = index.indexes
-HasEmbeddings(index::AbstractMultiIndex) = any(HasEmbeddings, indexes(index))
-HasKeywords(index::AbstractMultiIndex) = any(HasKeywords, indexes(index))
-
-"""
-	Base.var"=="(i1::MultiIndex, i2::MultiIndex)
-
-Check that each index has a counterpart in the other MultiIndex.
-"""
-function Base.var"=="(i1::MultiIndex, i2::MultiIndex)
-	length(indexes(i1)) != length(indexes(i2)) && return false
-	for i in i1.indexes
-		if !(i in i2.indexes)
-			return false
-		end
-	end
-	for i in i2.indexes
-		if !(i in i1.indexes)
-			return false
-		end
-	end
-	return true
-end
-
-
-"""
 	SubChunkIndex
 
 A view of the parent index with respect to the `chunks` (and chunk-aligned fields). 
@@ -494,4 +426,77 @@ Base.@propagate_inbounds function translate_positions_to_parent(
 )
 	sub_positions = positions(index)
 	return sub_positions[pos]
+end
+
+
+"""
+	MultiIndex
+
+Composite index that stores multiple ChunkIndex objects and their embeddings.
+
+# Fields
+- `id::Symbol`: unique identifier of each index (to ensure we're using the right index with `CandidateChunks`)
+- `indexes::Vector{<:AbstractChunkIndex}`: the indexes to be combined
+
+Use accesor `indexes` to access the individual indexes.
+
+# Examples
+
+We can create a `MultiIndex` from a vector of `AbstractChunkIndex` objects.
+```julia
+index = build_index(SimpleIndexer(), texts; chunker_kwargs = (; sources))
+index_keywords = ChunkKeywordsIndex(index) # same chunks as above but adds BM25 instead of embeddings
+
+multi_index = MultiIndex([index, index_keywords])
+```
+
+To use `airag` with different types of indices, we need to specify how to find the closest items for each index
+```julia
+# Cosine similarity for embeddings and BM25 for keywords, same order as indexes in MultiIndex
+finder = RT.MultiFinder([RT.CosineSimilarity(), RT.BM25Similarity()])
+
+# Notice that we add `processor` to make sure keywords are processed (ie, tokenized) as well
+cfg = RAGConfig(; retriever = SimpleRetriever(; processor = RT.KeywordsProcessor(), finder))
+
+# Ask questions
+msg = airag(cfg, multi_index; question = "What are the best practices for parallel computing in Julia?")
+pprint(msg) # prettify the answer
+```
+
+"""
+@kwdef struct MultiIndex <: AbstractMultiIndex
+	id::Symbol = gensym("MultiIndex")
+	indexes::Vector{<:AbstractChunkIndex} = AbstractChunkIndex[]
+end
+
+function MultiIndex(indexes::AbstractChunkIndex...)
+	MultiIndex(; indexes = collect(indexes))
+end
+
+function MultiIndex(indexes::AbstractVector{<:AbstractChunkIndex})
+	MultiIndex(; indexes = indexes)
+end
+
+indexes(index::MultiIndex) = index.indexes
+HasEmbeddings(index::AbstractMultiIndex) = any(HasEmbeddings, indexes(index))
+HasKeywords(index::AbstractMultiIndex) = any(HasKeywords, indexes(index))
+
+"""
+	Base.var"=="(i1::MultiIndex, i2::MultiIndex)
+
+Check that each index has a counterpart in the other MultiIndex.
+"""
+function Base.var"=="(i1::MultiIndex, i2::MultiIndex)
+	length(indexes(i1)) != length(indexes(i2)) && return false
+	for i in i1.indexes
+		if !(i in i2.indexes)
+			return false
+		end
+	end
+	for i in i2.indexes
+		if !(i in i1.indexes)
+			return false
+		end
+	end
+	return true
 end

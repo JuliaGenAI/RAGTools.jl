@@ -5,9 +5,13 @@ using JSON3
 
 # Files inclusion 
 # ---------------
+# chunk.jl - Contains CandidateChunks and MultiCandidateChunks types for storing retrieval results
 include("chunk.jl")
+# document_term_matrix.jl - Contains DocumentTermMatrix type for BM25 similarity search
 include("document_term_matrix.jl")
+# index.jl - Contains ChunkIndex, MultiIndex and related types for storing document chunks
 include("index.jl") 
+# rag_result.jl - Contains RAGResult type for storing RAG pipeline results
 include("rag_result.jl")
 
 

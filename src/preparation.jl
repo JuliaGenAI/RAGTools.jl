@@ -291,9 +291,9 @@ function get_embeddings(
 	embedding_batch_size = floor(Int, target_batch_size_length / avg_length)
 	partitions = Iterators.partition(docs, embedding_batch_size)
 	p = Progress(length(partitions); desc = "Embedding documents...", showspeed = true)
-	embeddings = asyncmap(partitions;
-		ntasks) do docs_chunk
-		msg = aiembed(docs_chunk,
+	embeddings = asyncmap(partitions; ntasks) do docs_chunk
+		msg = aiembed(
+			docs_chunk,
 			normalize;
 			model,
 			verbose = false,

@@ -5,6 +5,11 @@
 	and related functions.
 """
 
+# Base Dependencies
+# ------------------
+using JSON3
+
+
 
 """
 	AbstractCandidateChunks

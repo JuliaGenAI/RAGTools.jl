@@ -1,3 +1,13 @@
+# External Dependencies
+# ----------------------------
+using PromptingTools: last_message, last_output
+
+# Local Dependencies
+# ------------------
+using RAGTools: RAGResult
+
+# Tests 
+# ------
 @testset "RAGResult" begin
 	result = RAGResult(; question = "a", answer = "b", final_answer = "c")
 	result2 = RAGResult(; question = "a", answer = "b", final_answer = "c")

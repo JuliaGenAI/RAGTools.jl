@@ -39,7 +39,11 @@ include("rag_interface.jl")
 
 export ChunkIndex, ChunkKeywordsIndex, ChunkEmbeddingsIndex, CandidateChunks, RAGResult
 export MultiIndex, SubChunkIndex, MultiCandidateChunks
-include("types/Types.jl")
+include("types/candidate_chunks.jl") # contains CandidateChunks and MultiCandidateChunks types for storing retrieval results
+include("types/document_term_matrix.jl") # contains DocumentTermMatrix type for BM25 similarity search
+include("types/index.jl") # contains ChunkIndex, MultiIndex and related types for storing document chunks
+include("types/rag_result.jl") # contains RAGResult type for storing RAG pipeline results
+
 
 export build_index, get_chunks, get_embeddings, get_keywords, get_tags, SimpleIndexer,
 	KeywordsIndexer

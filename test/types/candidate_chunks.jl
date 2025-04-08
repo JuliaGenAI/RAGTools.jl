@@ -1,3 +1,10 @@
+# Local Dependencies
+# ------------------
+using RAGTools: AbstractCandidateChunks, CandidateChunks, MultiCandidateChunks
+using RAGTools: indexid, indexids, positions, scores
+
+# Tests
+# ------
 
 @testset "CandidateChunks" begin
 	chunk_sym = Symbol("TestChunkEmbeddingsIndex")

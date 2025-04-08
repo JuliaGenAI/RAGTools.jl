@@ -1,3 +1,10 @@
+# Local Dependencies
+# ------------------
+using RAGTools: DocumentTermMatrix, SubDocumentTermMatrix, document_term_matrix
+using RAGTools: parent, positions, tf, vocab, vocab_lookup, idf, doc_rel_length
+
+# Tests 
+# ------
 
 @testset "DocumentTermMatrix" begin
 	# Simple case

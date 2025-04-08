@@ -15,7 +15,10 @@ const RT = RAGTools
 	end
 	@testset "Core" begin
 		include("utils.jl")
-		include("types/Types.jl")
+		include("types/candidate_chunks.jl")
+		include("types/document_term_matrix.jl")
+		include("types/index.jl")
+		include("types/rag_result.jl")
 		include("preparation.jl")
 		include("rank_gpt.jl")
 		include("retrieval.jl")

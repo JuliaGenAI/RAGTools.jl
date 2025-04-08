@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Refactored
 - Format files using `JuliaFormatter.jl`.
+- Split types.jl in different files to improve readability and ease contribution.
 
 
 ## [0.3.0]

@@ -37,6 +37,8 @@ include("api_services.jl")
 
 include("rag_interface.jl")
 
+# Types
+# ------
 export ChunkIndex, ChunkKeywordsIndex, ChunkEmbeddingsIndex, CandidateChunks, RAGResult
 export MultiIndex, SubChunkIndex, MultiCandidateChunks
 include("types/candidate_chunks.jl") # contains CandidateChunks and MultiCandidateChunks types for storing retrieval results

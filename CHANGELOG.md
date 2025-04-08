@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Refactored
 - Format files using `JuliaFormatter.jl`.
-- Split types.jl in different files to improve readability and ease contribution.
+- Split types.jl into separate files (candidate_chunks.jl, document_term_matrix.jl, index.jl, rag_result.jl) to improve readability and ease contribution. This is an internal refactoring that should have no functional impact on users, but is noted here in case any issues arise.
 
 
 ## [0.3.0]

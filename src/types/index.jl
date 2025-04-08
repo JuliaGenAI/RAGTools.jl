@@ -7,11 +7,6 @@
 	and related functions, including those for `AbstractDocumentIndex`.
 """
 
-# Base Dependencies
-# ------------------
-using Base: parent
-
-
 """ 
 	AbstractDocumentIndex
 """

@@ -1,4 +1,4 @@
-# External Dependencies
+# PromptingTools Dependencies
 # ----------------------------
 using PromptingTools: last_message, last_output
 

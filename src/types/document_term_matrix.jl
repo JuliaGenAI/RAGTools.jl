@@ -6,11 +6,6 @@
 	and related functions, including those for `AbstractDocumentTermMatrix`.
 """
 
-# Base Dependencies
-# ------------------
-using Base: parent
-
-
 """ 
 	AbstractDocumentTermMatrix
 """

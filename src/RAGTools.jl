@@ -20,21 +20,20 @@ const PT = PromptingTools
 
 # re-export PromptingTools
 using PromptingTools: aigenerate, aiembed, aiclassify, aiextract, aiscan, aiimage, @ai_str,
-	@aai_str, @ai!_str, @aai!_str
+                      @aai_str, @ai!_str, @aai!_str
 export aigenerate, aiembed, aiclassify, aiextract, aiscan, aiimage, @ai_str, @aai_str,
-	@ai!_str, @aai!_str
+       @ai!_str, @aai!_str
 
 using PromptingTools: ConversationMemory, aitemplates, AITemplate, AICode, pprint
 export ConversationMemory, aitemplates, AITemplate, AICode, pprint
 
 using PromptingTools: AbstractMessage, UserMessage, SystemMessage, AIMessage,
-	UserMessageWithImages, DataMessage, AIToolRequest, ToolMessage
+                      UserMessageWithImages, DataMessage, AIToolRequest, ToolMessage
 export UserMessage, SystemMessage, UserMessageWithImages, DataMessage, AIToolRequest,
-	ToolMessage, AbstractMessage, AIMessage
+       ToolMessage, AbstractMessage, AIMessage
 
 using PromptingTools: create_template, recursive_splitter
 export create_template, recursive_splitter
-
 
 # Files inclusion 
 # ----------------
@@ -48,7 +47,6 @@ include("api_services.jl") # eg, cohere_api, tavily_api, create_websearch
 
 include("rag_interface.jl")
 
-
 export ChunkIndex, ChunkKeywordsIndex, ChunkEmbeddingsIndex, CandidateChunks, RAGResult
 export MultiIndex, SubChunkIndex, MultiCandidateChunks
 include("types/candidate_chunks.jl") # contains CandidateChunks and MultiCandidateChunks types for storing retrieval results
@@ -57,7 +55,7 @@ include("types/index.jl") # contains ChunkIndex, MultiIndex and related types fo
 include("types/rag_result.jl") # contains RAGResult type for storing RAG pipeline results
 
 export build_index, get_chunks, get_embeddings, get_keywords, get_tags, SimpleIndexer,
-	KeywordsIndexer
+       KeywordsIndexer
 include("preparation.jl")
 
 include("rank_gpt.jl")

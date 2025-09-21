@@ -52,41 +52,41 @@ index[result.reranked_candidates]
 ```
 """
 function RT.rerank(
-	reranker::RT.FlashRanker, index::RT.AbstractDocumentIndex, question::AbstractString,
-	candidates::RT.AbstractCandidateChunks;
-	verbose::Bool = false,
-	top_n::Integer = length(candidates.scores),
-	unique_chunks::Bool = true,
-	kwargs...)
-	@assert top_n > 0 "top_n must be a positive integer."
-	documents = index[candidates, :chunks]
-	@assert !(isempty(documents)) "The candidate chunks must not be empty! Check the index IDs."
+        reranker::RT.FlashRanker, index::RT.AbstractDocumentIndex, question::AbstractString,
+        candidates::RT.AbstractCandidateChunks;
+        verbose::Bool = false,
+        top_n::Integer = length(candidates.scores),
+        unique_chunks::Bool = true,
+        kwargs...)
+    @assert top_n > 0 "top_n must be a positive integer."
+    documents = index[candidates, :chunks]
+    @assert !(isempty(documents)) "The candidate chunks must not be empty! Check the index IDs."
 
-	is_multi_cand = candidates isa RT.MultiCandidateChunks
-	index_ids = is_multi_cand ? candidates.index_ids : candidates.index_id
-	positions = candidates.positions
-	## Find unique only items
-	if unique_chunks
-		verbose && @info "Removing duplicates from candidate chunks prior to reranking"
-		unique_idxs = PT.unique_permutation(documents)
-		documents = documents[unique_idxs]
-		positions = positions[unique_idxs]
-		index_ids = is_multi_cand ? index_ids[unique_idxs] : index_ids
-	end
+    is_multi_cand = candidates isa RT.MultiCandidateChunks
+    index_ids = is_multi_cand ? candidates.index_ids : candidates.index_id
+    positions = candidates.positions
+    ## Find unique only items
+    if unique_chunks
+        verbose && @info "Removing duplicates from candidate chunks prior to reranking"
+        unique_idxs = PT.unique_permutation(documents)
+        documents = documents[unique_idxs]
+        positions = positions[unique_idxs]
+        index_ids = is_multi_cand ? index_ids[unique_idxs] : index_ids
+    end
 
-	## Run re-ranker
-	ranker = reranker.model
-	result = ranker(question, documents; top_n)
+    ## Run re-ranker
+    ranker = reranker.model
+    result = ranker(question, documents; top_n)
 
-	## Unwrap re-ranked positions
-	scores = result.scores
-	positions = positions[result.positions]
+    ## Unwrap re-ranked positions
+    scores = result.scores
+    positions = positions[result.positions]
 
-	verbose && @info "Reranking done in $(round(result.elapsed; digits=1)) seconds."
+    verbose && @info "Reranking done in $(round(result.elapsed; digits=1)) seconds."
 
-	return is_multi_cand ?
-		   RT.MultiCandidateChunks(index_ids[result.positions], positions, scores) :
-		   RT.CandidateChunks(index_ids, positions, scores)
+    return is_multi_cand ?
+           RT.MultiCandidateChunks(index_ids[result.positions], positions, scores) :
+           RT.CandidateChunks(index_ids, positions, scores)
 end
 
 end #end of module

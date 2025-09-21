@@ -18,8 +18,8 @@ using Statistics: mean
 # Simply go to [DataFrames.jl docs](https://dataframes.juliadata.org/stable/) and copy&paste a few pages into separate text files. Save them in the `examples/data` folder (see some example pages provided). Ideally, delete all the noise (like headers, footers, etc.) and keep only the text you want to use for the chatbot. Remember, garbage in, garbage out!
 
 files = [
-	joinpath("examples", "data", "database_style_joins.txt"),
-	joinpath("examples", "data", "what_is_dataframes.txt"),
+    joinpath("examples", "data", "database_style_joins.txt"),
+    joinpath("examples", "data", "what_is_dataframes.txt")
 ]
 ## Build an index of chunks and embed them
 index = build_index(files)
@@ -59,9 +59,9 @@ index = deserialize("examples/index.jls")
 
 # We need to provide: chunks and sources (filepaths for future reference)
 evals = build_qa_evals(RT.chunks(index),
-	RT.sources(index);
-	instructions = "None.",
-	verbose = true);
+    RT.sources(index);
+    instructions = "None.",
+    verbose = true);
 ## Info: Q&A Sets built! (cost: $0.143) -- not bad!
 
 # > [!TIP]
@@ -86,10 +86,10 @@ result = airag(index; evals[1].question, return_all = true);
 
 ## ctx is a RAGContext object that keeps all intermediate states of the RAG pipeline for easy evaluation
 judged = aiextract(:RAGJudgeAnswerFromContext;
-	result.context,
-	result.question,
-	result.final_answer,
-	return_type = RT.JudgeAllScores)
+    result.context,
+    result.question,
+    result.final_answer,
+    return_type = RT.JudgeAllScores)
 judged.content
 ## Dict{Symbol, Any} with 7 entries:
 ##   :final_rating => 4.8
@@ -102,7 +102,7 @@ judged.content
 
 # We can also run the whole evaluation in a function (a few more metrics are available):
 x = run_qa_evals(evals[10], ctx;
-	parameters_dict = Dict(:top_k => 3), verbose = true, model_judge = "gpt4t")
+    parameters_dict = Dict(:top_k => 3), verbose = true, model_judge = "gpt4t")
 
 # Fortunately, we don't have to do this one by one -- let's evaluate all our Q&A pairs at once.
 
@@ -111,12 +111,12 @@ x = run_qa_evals(evals[10], ctx;
 # Let's run each question & answer through our eval loop in async (we do it only for the first 10 to save time). See the `?airag` for which parameters you can tweak, eg, `top_k`
 
 results = asyncmap(evals[1:10]) do qa_item
-	## Generate an answer -- often you want the model_judge to be the highest quality possible, eg, "GPT-4 Turbo" (alias "gpt4t)
-	result = airag(index; qa_item.question, return_all = true,
-		top_k = 3, verbose = false, model_judge = "gpt4t")
-	## Evaluate the response
-	## Note: you can log key parameters for easier analysis later
-	run_qa_evals(qa_item, result; parameters_dict = Dict(:top_k => 3), verbose = false)
+    ## Generate an answer -- often you want the model_judge to be the highest quality possible, eg, "GPT-4 Turbo" (alias "gpt4t)
+    result = airag(index; qa_item.question, return_all = true,
+        top_k = 3, verbose = false, model_judge = "gpt4t")
+    ## Evaluate the response
+    ## Note: you can log key parameters for easier analysis later
+    run_qa_evals(qa_item, result; parameters_dict = Dict(:top_k => 3), verbose = false)
 end
 ## Note that the "failed" evals can show as "nothing", so make sure to handle them.
 results = filter(x -> !isnothing(x.answer_score), results);

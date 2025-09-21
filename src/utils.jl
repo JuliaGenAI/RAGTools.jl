@@ -1,53 +1,53 @@
 # Utility to check model suitability
 function _check_aiextract_capability(model::AbstractString)
-	# Check that the provided model is known and that it is an OpenAI model (for the aiextract function to work)
-	@assert haskey(PT.MODEL_REGISTRY, model) &&
-			PT.MODEL_REGISTRY[model].schema isa PT.AbstractOpenAISchema "Only OpenAI models support the metadata extraction now. $model is not a registered OpenAI model."
+    # Check that the provided model is known and that it is an OpenAI model (for the aiextract function to work)
+    @assert haskey(PT.MODEL_REGISTRY, model) &&
+            PT.MODEL_REGISTRY[model].schema isa PT.AbstractOpenAISchema "Only OpenAI models support the metadata extraction now. $model is not a registered OpenAI model."
 end
 
 # Utitity to be able to combine indices from different sources/documents easily
 function vcat_labeled_matrices(
-	mat1::AbstractMatrix{T1},
-	vocab1::AbstractVector{<:AbstractString},
-	mat2::AbstractMatrix{T2},
-	vocab2::AbstractVector{<:AbstractString},
+        mat1::AbstractMatrix{T1},
+        vocab1::AbstractVector{<:AbstractString},
+        mat2::AbstractMatrix{T2},
+        vocab2::AbstractVector{<:AbstractString}
 ) where {T1 <: Number, T2 <: Number}
-	T = promote_type(T1, T2)
-	new_words = setdiff(vocab2, vocab1)
-	combined_vocab = [vocab1; new_words]
-	vocab2_indices = Dict(word => i for (i, word) in enumerate(vocab2))
+    T = promote_type(T1, T2)
+    new_words = setdiff(vocab2, vocab1)
+    combined_vocab = [vocab1; new_words]
+    vocab2_indices = Dict(word => i for (i, word) in enumerate(vocab2))
 
-	aligned_mat1 = hcat(mat1, zeros(T, size(mat1, 1), length(new_words)))
-	aligned_mat2 = [haskey(vocab2_indices, word) ? @view(mat2[:, vocab2_indices[word]]) :
-					zeros(T, size(mat2, 1)) for word in combined_vocab]
-	aligned_mat2 = aligned_mat2 |> Base.Splat(hcat)
+    aligned_mat1 = hcat(mat1, zeros(T, size(mat1, 1), length(new_words)))
+    aligned_mat2 = [haskey(vocab2_indices, word) ? @view(mat2[:, vocab2_indices[word]]) :
+                    zeros(T, size(mat2, 1)) for word in combined_vocab]
+    aligned_mat2 = aligned_mat2 |> Base.Splat(hcat)
 
-	return vcat(aligned_mat1, aligned_mat2), combined_vocab
+    return vcat(aligned_mat1, aligned_mat2), combined_vocab
 end
 
 function hcat_labeled_matrices(
-	mat1::AbstractMatrix{T1},
-	vocab1::AbstractVector{<:AbstractString},
-	mat2::AbstractMatrix{T2},
-	vocab2::AbstractVector{<:AbstractString},
+        mat1::AbstractMatrix{T1},
+        vocab1::AbstractVector{<:AbstractString},
+        mat2::AbstractMatrix{T2},
+        vocab2::AbstractVector{<:AbstractString}
 ) where {T1 <: Number, T2 <: Number}
-	T = promote_type(T1, T2)
-	new_vocab = setdiff(vocab2, vocab1)
-	combined_vocab = [vocab1; new_vocab]
-	vocab2_indices = Dict(word => i for (i, word) in enumerate(vocab2))
+    T = promote_type(T1, T2)
+    new_vocab = setdiff(vocab2, vocab1)
+    combined_vocab = [vocab1; new_vocab]
+    vocab2_indices = Dict(word => i for (i, word) in enumerate(vocab2))
 
-	aligned_mat1 = vcat(mat1, zeros(T, length(new_vocab), size(mat1, 2)))
+    aligned_mat1 = vcat(mat1, zeros(T, length(new_vocab), size(mat1, 2)))
 
-	## Inefficient for sparseArrays but seemed like the only way "generic" way that works for sparse matrices
-	aligned_mat2 = similar(mat2, length(combined_vocab), size(mat2, 2))
-	aligned_mat2 .= zero(T)
-	for (i, word) in enumerate(combined_vocab)
-		if haskey(vocab2_indices, word)
-			aligned_mat2[i, :] = mat2[vocab2_indices[word], :]
-		end
-	end
+    ## Inefficient for sparseArrays but seemed like the only way "generic" way that works for sparse matrices
+    aligned_mat2 = similar(mat2, length(combined_vocab), size(mat2, 2))
+    aligned_mat2 .= zero(T)
+    for (i, word) in enumerate(combined_vocab)
+        if haskey(vocab2_indices, word)
+            aligned_mat2[i, :] = mat2[vocab2_indices[word], :]
+        end
+    end
 
-	return hcat(aligned_mat1, aligned_mat2), combined_vocab
+    return hcat(aligned_mat1, aligned_mat2), combined_vocab
 end
 
 """
@@ -81,153 +81,154 @@ size(d) # (500, 30)
 ```
 """
 function hcat_truncate(
-	matrices::AbstractVector{<:AbstractMatrix{T}},
-	truncate_dimension::Union{Nothing, Int} = nothing;
-	verbose::Bool = false,
+        matrices::AbstractVector{<:AbstractMatrix{T}},
+        truncate_dimension::Union{Nothing, Int} = nothing;
+        verbose::Bool = false
 ) where {T <: Real}
-	rows = -1
-	total_cols = 0
-	@inbounds for matrix in matrices
-		row, col = size(matrix)
-		if rows < 0
-			rows = row
-		else
-			@assert row == rows "All matrices must have the same number of rows (Found $row and $rows)"
-		end
-		total_cols += col
-	end
+    rows = -1
+    total_cols = 0
+    @inbounds for matrix in matrices
+        row, col = size(matrix)
+        if rows < 0
+            rows = row
+        else
+            @assert row == rows "All matrices must have the same number of rows (Found $row and $rows)"
+        end
+        total_cols += col
+    end
 
-	## Check if we need to truncate
-	truncate, rows = if !isnothing(truncate_dimension) && truncate_dimension > 0
-		@assert truncate_dimension <= rows "Requested embeddings dimensionality is too high (Embeddings: $(rows) vs dimensionality requested: $(truncate_dimension))"
-		true, truncate_dimension
-	elseif !isnothing(truncate_dimension) && iszero(truncate_dimension)
-		verbose && @info "Truncate_dimension set to 0. Skipping truncation"
-		false, rows
-	else
-		false, rows
-	end
+    ## Check if we need to truncate
+    truncate,
+    rows = if !isnothing(truncate_dimension) && truncate_dimension > 0
+        @assert truncate_dimension <= rows "Requested embeddings dimensionality is too high (Embeddings: $(rows) vs dimensionality requested: $(truncate_dimension))"
+        true, truncate_dimension
+    elseif !isnothing(truncate_dimension) && iszero(truncate_dimension)
+        verbose && @info "Truncate_dimension set to 0. Skipping truncation"
+        false, rows
+    else
+        false, rows
+    end
 
-	## initialize result
-	result = Matrix{Float32}(undef, rows, total_cols)
+    ## initialize result
+    result = Matrix{Float32}(undef, rows, total_cols)
 
-	col_offset = 1
-	@inbounds for matrix in matrices
-		cols = size(matrix, 2)
-		if truncate
-			for col in eachcol(matrix)
-				## We must re-normalize the truncated vectors
-				## LinearAlgebra.normalize but imported in RAGToolsExperimentalExt
-				result[:, col_offset] = normalize(@view(col[1:rows]))
-				col_offset += 1
-			end
-		else
-			## no truncation
-			result[:, col_offset:(col_offset+cols-1)] = matrix
-			col_offset += cols
-		end
-	end
+    col_offset = 1
+    @inbounds for matrix in matrices
+        cols = size(matrix, 2)
+        if truncate
+            for col in eachcol(matrix)
+                ## We must re-normalize the truncated vectors
+                ## LinearAlgebra.normalize but imported in RAGToolsExperimentalExt
+                result[:, col_offset] = normalize(@view(col[1:rows]))
+                col_offset += 1
+            end
+        else
+            ## no truncation
+            result[:, col_offset:(col_offset + cols - 1)] = matrix
+            col_offset += cols
+        end
+    end
 
-	return result
+    return result
 end
 
 function hcat_truncate(
-	vectors::AbstractVector{<:AbstractVector{T}},
-	truncate_dimension::Union{Nothing, Int} = nothing;
-	verbose::Bool = false,
+        vectors::AbstractVector{<:AbstractVector{T}},
+        truncate_dimension::Union{Nothing, Int} = nothing;
+        verbose::Bool = false
 ) where {T <: Real}
-	rows = -1
-	total_cols = 0
-	@inbounds for vec in vectors
-		row = size(vec, 1)
-		if rows < 0
-			rows = row
-		else
-			@assert row == rows "All vectors must have the same number of rows (Found $row and $rows)"
-		end
-		total_cols += 1
-	end
+    rows = -1
+    total_cols = 0
+    @inbounds for vec in vectors
+        row = size(vec, 1)
+        if rows < 0
+            rows = row
+        else
+            @assert row == rows "All vectors must have the same number of rows (Found $row and $rows)"
+        end
+        total_cols += 1
+    end
 
-	# Check if we need to truncate
-	truncate, rows = if !isnothing(truncate_dimension) && truncate_dimension > 0
-		@assert truncate_dimension <= rows "Requested truncation dimension is too high (Vector length: $rows vs requested: $truncate_dimension)"
-		true, truncate_dimension
-	elseif !isnothing(truncate_dimension) && iszero(truncate_dimension)
-		verbose && @info "Truncate_dimension set to 0. Skipping truncation"
-		false, rows
-	else
-		false, rows
-	end
+    # Check if we need to truncate
+    truncate,
+    rows = if !isnothing(truncate_dimension) && truncate_dimension > 0
+        @assert truncate_dimension <= rows "Requested truncation dimension is too high (Vector length: $rows vs requested: $truncate_dimension)"
+        true, truncate_dimension
+    elseif !isnothing(truncate_dimension) && iszero(truncate_dimension)
+        verbose && @info "Truncate_dimension set to 0. Skipping truncation"
+        false, rows
+    else
+        false, rows
+    end
 
-	# Initialize result
-	result = Matrix{Float32}(undef, rows, total_cols)
+    # Initialize result
+    result = Matrix{Float32}(undef, rows, total_cols)
 
-	# Fill the result matrix
-	@inbounds for i in eachindex(vectors)
-		vect = vectors[i]
-		if truncate
-			# We must re-normalize the truncated vectors
-			result[:, i] = normalize(@view(vect[1:rows]))
-		else
-			result[:, i] = vect
-		end
-	end
+    # Fill the result matrix
+    @inbounds for i in eachindex(vectors)
+        vect = vectors[i]
+        if truncate
+            # We must re-normalize the truncated vectors
+            result[:, i] = normalize(@view(vect[1:rows]))
+        else
+            result[:, i] = vect
+        end
+    end
 
-	return result
+    return result
 end
 
 function vcat_labeled_matrices(
-	mat1::AbstractSparseMatrix{T1},
-	vocab1::AbstractVector{<:AbstractString},
-	mat2::AbstractSparseMatrix{T2},
-	vocab2::AbstractVector{<:AbstractString},
+        mat1::AbstractSparseMatrix{T1},
+        vocab1::AbstractVector{<:AbstractString},
+        mat2::AbstractSparseMatrix{T2},
+        vocab2::AbstractVector{<:AbstractString}
 ) where {T1 <: Number, T2 <: Number}
-	T = promote_type(T1, T2)
-	new_words = setdiff(vocab2, vocab1)
-	combined_vocab = [vocab1; new_words]
-	vocab2_indices = Dict(word => i for (i, word) in enumerate(vocab2))
+    T = promote_type(T1, T2)
+    new_words = setdiff(vocab2, vocab1)
+    combined_vocab = [vocab1; new_words]
+    vocab2_indices = Dict(word => i for (i, word) in enumerate(vocab2))
 
-	## more efficient composition
-	I, J, V = findnz(mat1)
-	aligned_mat1 = sparse(
-		I, J, convert(Vector{T}, V), size(mat1, 1), length(combined_vocab))
+    ## more efficient composition
+    I, J, V = findnz(mat1)
+    aligned_mat1 = sparse(
+        I, J, convert(Vector{T}, V), size(mat1, 1), length(combined_vocab))
 
-	## collect the mat2 more efficiently since it's sparse
-	I, J, V = Int[], Int[], T[]
-	nz_rows = rowvals(mat2)
-	nz_vals = nonzeros(mat2)
-	for (j, word) in enumerate(combined_vocab)
-		if haskey(vocab2_indices, word)
-			@inbounds @simd for k in nzrange(mat2, vocab2_indices[word])
-				i = nz_rows[k]
-				val = nz_vals[k]
-				if !iszero(val)
-					push!(I, i)
-					push!(J, j)
-					push!(V, val)
-				end
-			end
-		end
-	end
-	aligned_mat2 = sparse(I, J, V, size(mat2, 1), length(combined_vocab))
+    ## collect the mat2 more efficiently since it's sparse
+    I, J, V = Int[], Int[], T[]
+    nz_rows = rowvals(mat2)
+    nz_vals = nonzeros(mat2)
+    for (j, word) in enumerate(combined_vocab)
+        if haskey(vocab2_indices, word)
+            @inbounds @simd for k in nzrange(mat2, vocab2_indices[word])
+                i = nz_rows[k]
+                val = nz_vals[k]
+                if !iszero(val)
+                    push!(I, i)
+                    push!(J, j)
+                    push!(V, val)
+                end
+            end
+        end
+    end
+    aligned_mat2 = sparse(I, J, V, size(mat2, 1), length(combined_vocab))
 
-	return vcat(aligned_mat1, aligned_mat2), combined_vocab
+    return vcat(aligned_mat1, aligned_mat2), combined_vocab
 end
 
 ### Text Utilities
 # STOPWORDS - used for annotation highlighting
 # Just a small list to get started
-const STOPWORDS =
-	[
-		"a", "an", "the", "and", "is", "isn't", "isn", "are",
-		"aren", "aren't", "be", "was", "wasn't", "been",
-		"will", "won't", "won", "would", "wouldn't", "wouldn",
-		"have", "haven't", "has", "hasn't", "hasn", "do", "don't", "don", "does", "did", "to",
-		"from", "go", "goes", "went", "gone", "at",
-		"into", "on", "or", "but", "per", "so", "then", "than", "was",
-		"what", "why", "who", "where", "whom", "which", "that", "with",
-		"its", "their", "it", "to", "such", "some", "these", "there", "of"] |>
-	x -> vcat(x, titlecase.(x))
+const STOPWORDS = [
+    "a", "an", "the", "and", "is", "isn't", "isn", "are",
+    "aren", "aren't", "be", "was", "wasn't", "been",
+    "will", "won't", "won", "would", "wouldn't", "wouldn",
+    "have", "haven't", "has", "hasn't", "hasn", "do", "don't", "don", "does", "did", "to",
+    "from", "go", "goes", "went", "gone", "at",
+    "into", "on", "or", "but", "per", "so", "then", "than", "was",
+    "what", "why", "who", "where", "whom", "which", "that", "with",
+    "its", "their", "it", "to", "such", "some", "these", "there", "of"] |>
+                  x -> vcat(x, titlecase.(x))
 # Some stop words intentionally omitted as we want to track them for code:
 # "if","else","elseif", "in", "for", "let","for",  
 
@@ -239,9 +240,9 @@ Tokenizes provided `input` by spaces, special characters or Julia symbols (eg, `
 Unlike other tokenizers, it aims to lossless - ie, keep both the separated text and the separators.
 """
 function tokenize(input::Union{String, SubString{String}})
-	# specific to Julia language pattern, eg, capture macros (@xyz) or common operators (=>)
-	pattern = r"(\s+|=>|\(;|,|\.|\(|\)|\{|\}|\[|\]|;|:|\+|-|\*|/|<|>|=|&|\||!|@\w+|@|#|\$|%|\^|~|`|\"|'|\w+)"
-	SubString{String}[m.match for m in eachmatch(pattern, input)]
+    # specific to Julia language pattern, eg, capture macros (@xyz) or common operators (=>)
+    pattern = r"(\s+|=>|\(;|,|\.|\(|\)|\{|\}|\[|\]|;|:|\+|-|\*|/|<|>|=|&|\||!|@\w+|@|#|\$|%|\^|~|`|\"|'|\w+)"
+    SubString{String}[m.match for m in eachmatch(pattern, input)]
 end
 
 """
@@ -252,26 +253,26 @@ Splits provided `input_string` into a vector of trigrams (combination of three c
 If `add_word` is provided, it is added to the resulting array. Useful to add the full word itself to the resulting array for exact match.
 """
 function trigrams(input_string::AbstractString; add_word::AbstractString = "")
-	trigrams = SubString{String}[]
-	# Ensure the input string length is at least 3 to form a trigram
-	if length(input_string) >= 3
-		nunits = ncodeunits(input_string)
-		i = 1
-		while i <= nunits
-			j = nextind(input_string, i, 2)
-			if j <= nunits
-				push!(trigrams, @views input_string[i:j])
-				## next starter
-				i = nextind(input_string, i)
-			else
-				break
-			end
-		end
-		## else
-		##     push!(trigrams, convert(SubString{String}, input_string))
-	end
-	!isempty(add_word) && push!(trigrams, convert(SubString{String}, add_word))
-	return trigrams
+    trigrams = SubString{String}[]
+    # Ensure the input string length is at least 3 to form a trigram
+    if length(input_string) >= 3
+        nunits = ncodeunits(input_string)
+        i = 1
+        while i <= nunits
+            j = nextind(input_string, i, 2)
+            if j <= nunits
+                push!(trigrams, @views input_string[i:j])
+                ## next starter
+                i = nextind(input_string, i)
+            else
+                break
+            end
+        end
+        ## else
+        ##     push!(trigrams, convert(SubString{String}, input_string))
+    end
+    !isempty(add_word) && push!(trigrams, convert(SubString{String}, add_word))
+    return trigrams
 end
 
 """
@@ -284,26 +285,26 @@ It is more efficient for lookups in large strings (eg, >100K characters).
 If `add_word` is provided, it is added to the resulting array to hash. Useful to add the full word itself to the resulting array for exact match.
 """
 function trigrams_hashed(input_string::AbstractString; add_word::AbstractString = "")
-	trigrams = Set{UInt64}()
-	# Ensure the input string length is at least 3 to form a trigram
-	if length(input_string) >= 3
-		nunits = ncodeunits(input_string)
-		i = 1
-		while i <= nunits
-			j = nextind(input_string, i, 2)
-			if j <= nunits
-				push!(trigrams, hash(@views input_string[i:j]))
-				## next starter
-				i = nextind(input_string, i)
-			else
-				break
-			end
-		end
-		## else
-		##     push!(trigrams, hash(input_string))
-	end
-	!isempty(add_word) && push!(trigrams, hash(add_word))
-	return trigrams
+    trigrams = Set{UInt64}()
+    # Ensure the input string length is at least 3 to form a trigram
+    if length(input_string) >= 3
+        nunits = ncodeunits(input_string)
+        i = 1
+        while i <= nunits
+            j = nextind(input_string, i, 2)
+            if j <= nunits
+                push!(trigrams, hash(@views input_string[i:j]))
+                ## next starter
+                i = nextind(input_string, i)
+            else
+                break
+            end
+        end
+        ## else
+        ##     push!(trigrams, hash(input_string))
+    end
+    !isempty(add_word) && push!(trigrams, hash(add_word))
+    return trigrams
 end
 
 """
@@ -314,79 +315,79 @@ end
 Joins the three tokens together. Useful to add boundary tokens (like spaces vs brackets) to the `curr_token` to improve the matched context (ie, separate partial matches from exact match)
 """
 function token_with_boundaries(
-	prev_token::Union{Nothing, AbstractString},
-	curr_token::AbstractString,
-	next_token::Union{Nothing, AbstractString},
+        prev_token::Union{Nothing, AbstractString},
+        curr_token::AbstractString,
+        next_token::Union{Nothing, AbstractString}
 )
-	##
-	len1 = isnothing(prev_token) ? 0 : length(prev_token)
-	len2 = length(curr_token)
-	len3 = isnothing(next_token) ? 0 : length(next_token)
+    ##
+    len1 = isnothing(prev_token) ? 0 : length(prev_token)
+    len2 = length(curr_token)
+    len3 = isnothing(next_token) ? 0 : length(next_token)
 
-	## concat only if single token boundaries!
-	token = if len2 == 1
-		curr_token
-	elseif len1 == 1 && len3 == 1
-		prev_token * curr_token * next_token
-	elseif len1 == 0 && len3 == 1
-		## no prev_token, but next_token
-		curr_token * next_token
-	elseif len3 == 1
-		curr_token * next_token
-	elseif len1 == 1
-		## convert both len3=0 and len3>1
-		prev_token * curr_token
-	else
-		curr_token
-	end
+    ## concat only if single token boundaries!
+    token = if len2 == 1
+        curr_token
+    elseif len1 == 1 && len3 == 1
+        prev_token * curr_token * next_token
+    elseif len1 == 0 && len3 == 1
+        ## no prev_token, but next_token
+        curr_token * next_token
+    elseif len3 == 1
+        curr_token * next_token
+    elseif len1 == 1
+        ## convert both len3=0 and len3>1
+        prev_token * curr_token
+    else
+        curr_token
+    end
 end
 
 function text_to_trigrams(input::Union{String, SubString{String}}; add_word::Bool = true)
-	tokens = tokenize(input)
-	length_toks = length(tokens)
-	trig = SubString{String}[]
-	prev_token = nothing
-	for i in eachindex(tokens)
-		next_tok = i == length_toks ? nothing : tokens[i+1]
-		curr_tok = tokens[i]
-		## if too short, skip the token
-		if length(curr_tok) > 1
-			##     push!(trig, curr_tok)
-			## else
-			full_tok = token_with_boundaries(prev_token, curr_tok, next_tok)
-			if add_word
-				append!(trig, trigrams(full_tok; add_word = curr_tok))
-			else
-				append!(trig, trigrams(full_tok))
-			end
-		end
-		prev_token = curr_tok
-	end
-	return trig
+    tokens = tokenize(input)
+    length_toks = length(tokens)
+    trig = SubString{String}[]
+    prev_token = nothing
+    for i in eachindex(tokens)
+        next_tok = i == length_toks ? nothing : tokens[i + 1]
+        curr_tok = tokens[i]
+        ## if too short, skip the token
+        if length(curr_tok) > 1
+            ##     push!(trig, curr_tok)
+            ## else
+            full_tok = token_with_boundaries(prev_token, curr_tok, next_tok)
+            if add_word
+                append!(trig, trigrams(full_tok; add_word = curr_tok))
+            else
+                append!(trig, trigrams(full_tok))
+            end
+        end
+        prev_token = curr_tok
+    end
+    return trig
 end
 
 function text_to_trigrams_hashed(input::AbstractString; add_word::Bool = true)
-	tokens = tokenize(input)
-	length_toks = length(tokens)
-	trig = Set{UInt64}()
-	prev_token = nothing
-	for i in eachindex(tokens)
-		next_tok = i == length_toks ? nothing : tokens[i+1]
-		curr_tok = tokens[i]
-		## if too short, just skip the token
-		if length(curr_tok) > 1
-			##     push!(trig, hash(curr_tok))
-			## else
-			full_tok = token_with_boundaries(prev_token, curr_tok, next_tok)
-			if add_word
-				union!(trig, trigrams_hashed(full_tok; add_word = curr_tok))
-			else
-				union!(trig, trigrams_hashed(full_tok))
-			end
-		end
-		prev_token = curr_tok
-	end
-	return trig
+    tokens = tokenize(input)
+    length_toks = length(tokens)
+    trig = Set{UInt64}()
+    prev_token = nothing
+    for i in eachindex(tokens)
+        next_tok = i == length_toks ? nothing : tokens[i + 1]
+        curr_tok = tokens[i]
+        ## if too short, just skip the token
+        if length(curr_tok) > 1
+            ##     push!(trig, hash(curr_tok))
+            ## else
+            full_tok = token_with_boundaries(prev_token, curr_tok, next_tok)
+            if add_word
+                union!(trig, trigrams_hashed(full_tok; add_word = curr_tok))
+            else
+                union!(trig, trigrams_hashed(full_tok))
+            end
+        end
+        prev_token = curr_tok
+    end
+    return trig
 end
 
 """
@@ -398,55 +399,55 @@ If code block, it splits by newline but keep the `group_id` the same (to have th
 If text block, splits into sentences, bullets, etc., provides different `group_id` (to have different source)
 """
 function split_into_code_and_sentences(input::Union{String, SubString{String}})
-	# Combining the patterns for code blocks, inline code, and sentences in one regex
-	# This pattern aims to match code blocks first, then inline code, and finally any text outside of code blocks as sentences or parts thereof.
-	pattern = r"(```[\s\S]+?```)|(`[^`]*?`)|([^`]+)"
+    # Combining the patterns for code blocks, inline code, and sentences in one regex
+    # This pattern aims to match code blocks first, then inline code, and finally any text outside of code blocks as sentences or parts thereof.
+    pattern = r"(```[\s\S]+?```)|(`[^`]*?`)|([^`]+)"
 
-	## Patterns for sentences: newline, tab, bullet, enumerate list, sentence, any left out characters
-	sentence_pattern = r"(\n|\t|^\s*[*+-]\s*|^\s*\d+\.\s+|[^\n\t\.!?]+[\.!?]*|[*+\-\.!?])"ms
+    ## Patterns for sentences: newline, tab, bullet, enumerate list, sentence, any left out characters
+    sentence_pattern = r"(\n|\t|^\s*[*+-]\s*|^\s*\d+\.\s+|[^\n\t\.!?]+[\.!?]*|[*+\-\.!?])"ms
 
-	# Initialize an empty array to store the split sentences
-	sentences = SubString{String}[]
-	group_ids = Int[]
+    # Initialize an empty array to store the split sentences
+    sentences = SubString{String}[]
+    group_ids = Int[]
 
-	# Loop over the input string, searching for matches to the pattern
-	i = 1
-	for m in eachmatch(pattern, input)
-		## number of sub-parts
-		j = 1
-		# Extract the full match, including any delimiters
-		match_block = m.match
-		# Check if the match is a code block with triple backticks
-		if startswith(match_block, "```")
-			# Split code block by newline, retaining the backticks
-			block_lines = split(match_block, "\n", keepempty = false)
-			for (cnt, block) in enumerate(block_lines)
-				push!(sentences, block)
-				# all the lines of the chode block are the same group to have one source annotation
-				push!(group_ids, i)
-				if cnt < length(block_lines)
-					## return newlines
-					push!(sentences, "\n")
-					push!(group_ids, i)
-				end
-			end
-		elseif startswith(match_block, "`")
-			push!(sentences, match_block)
-			push!(group_ids, i)
-		else
-			## Split text further
-			j = 0
-			for m_sent in eachmatch(sentence_pattern, match_block)
-				push!(sentences, m_sent.match)
-				push!(group_ids, i + j) # all sentences to have separate group
-				j += 1
-			end
-		end
-		## increment counter
-		i += j
-	end
+    # Loop over the input string, searching for matches to the pattern
+    i = 1
+    for m in eachmatch(pattern, input)
+        ## number of sub-parts
+        j = 1
+        # Extract the full match, including any delimiters
+        match_block = m.match
+        # Check if the match is a code block with triple backticks
+        if startswith(match_block, "```")
+            # Split code block by newline, retaining the backticks
+            block_lines = split(match_block, "\n", keepempty = false)
+            for (cnt, block) in enumerate(block_lines)
+                push!(sentences, block)
+                # all the lines of the chode block are the same group to have one source annotation
+                push!(group_ids, i)
+                if cnt < length(block_lines)
+                    ## return newlines
+                    push!(sentences, "\n")
+                    push!(group_ids, i)
+                end
+            end
+        elseif startswith(match_block, "`")
+            push!(sentences, match_block)
+            push!(group_ids, i)
+        else
+            ## Split text further
+            j = 0
+            for m_sent in eachmatch(sentence_pattern, match_block)
+                push!(sentences, m_sent.match)
+                push!(group_ids, i + j) # all sentences to have separate group
+                j += 1
+            end
+        end
+        ## increment counter
+        i += j
+    end
 
-	return sentences, group_ids
+    return sentences, group_ids
 end
 
 ### Functionality for BM25 preprocessing
@@ -467,42 +468,42 @@ preprocess_tokens(text, stemmer; stopwords)
 ```
 """
 function preprocess_tokens(
-	text::AbstractString,
-	stemmer = nothing;
-	stopwords::Union{Nothing, Set{String}} = Set(STOPWORDS),
-	min_length::Int = 3,
+        text::AbstractString,
+        stemmer = nothing;
+        stopwords::Union{Nothing, Set{String}} = Set(STOPWORDS),
+        min_length::Int = 3
 )
-	# Normalize Unicode and strip accents
-	text = Unicode.normalize(text; compose = true, casefold = true,
-		stripmark = true, stripignore = true, stripcc = true)
+    # Normalize Unicode and strip accents
+    text = Unicode.normalize(text; compose = true, casefold = true,
+        stripmark = true, stripignore = true, stripcc = true)
 
-	# Remove numbers, punctuation, etc
-	text = replace(text, r"[^a-zA-Z ]" => " ")
+    # Remove numbers, punctuation, etc
+    text = replace(text, r"[^a-zA-Z ]" => " ")
 
-	# Tokenize by space
-	tokens = split(text)
-	filter!(token -> length(token) >= min_length, tokens)
+    # Tokenize by space
+    tokens = split(text)
+    filter!(token -> length(token) >= min_length, tokens)
 
-	# Snowball stemmer
-	if !isnothing(stemmer)
-		tokens = [stem(stemmer, token) for token in tokens]
-	end
+    # Snowball stemmer
+    if !isnothing(stemmer)
+        tokens = [stem(stemmer, token) for token in tokens]
+    end
 
-	# Remove stopwords
-	if !isnothing(stopwords)
-		tokens = [token for token in tokens if !(token in stopwords)]
-	end
+    # Remove stopwords
+    if !isnothing(stopwords)
+        tokens = [token for token in tokens if !(token in stopwords)]
+    end
 
-	return tokens
+    return tokens
 end
 
 function preprocess_tokens(
-	texts::Vector{<:AbstractString},
-	stemmer = nothing;
-	stopwords::Union{Nothing, Set{String}} = nothing,
-	min_length::Int = 3,
+        texts::Vector{<:AbstractString},
+        stemmer = nothing;
+        stopwords::Union{Nothing, Set{String}} = nothing,
+        min_length::Int = 3
 )
-	map(text -> preprocess_tokens(text, stemmer; stopwords, min_length), texts)
+    map(text -> preprocess_tokens(text, stemmer; stopwords, min_length), texts)
 end
 
 ## Utility to extract values from nested kwargs
@@ -540,26 +541,26 @@ kwargs = setpropertynested(
 ```
 """
 function setpropertynested(
-	nt::NamedTuple,
-	parent_keys::Vector{Symbol},
-	key::Symbol,
-	value,
+        nt::NamedTuple,
+        parent_keys::Vector{Symbol},
+        key::Symbol,
+        value
 )
-	result = Dict{Symbol, Any}(pairs(nt))
-	for (key_, val_) in pairs(nt)
-		if key_ in parent_keys && val_ isa NamedTuple
-			# replace/set directly and recurse
-			result[key_] = merge(val_, (; zip([key], [value])...)) |>
-						   x -> setpropertynested(x, parent_keys, key, value)
-		elseif key_ in parent_keys
-			# for Dict and similar
-			result[key_][key] = value
-		elseif val_ isa NamedTuple
-			# recurse to check if its inside
-			result[key_] = setpropertynested(val_, parent_keys, key, value)
-		end
-	end
-	return (; zip(keys(result), values(result))...)
+    result = Dict{Symbol, Any}(pairs(nt))
+    for (key_, val_) in pairs(nt)
+        if key_ in parent_keys && val_ isa NamedTuple
+            # replace/set directly and recurse
+            result[key_] = merge(val_, (; zip([key], [value])...)) |>
+                           x -> setpropertynested(x, parent_keys, key, value)
+        elseif key_ in parent_keys
+            # for Dict and similar
+            result[key_][key] = value
+        elseif val_ isa NamedTuple
+            # recurse to check if its inside
+            result[key_] = setpropertynested(val_, parent_keys, key, value)
+        end
+    end
+    return (; zip(keys(result), values(result))...)
 end
 
 """
@@ -578,25 +579,25 @@ getpropertynested(kw, [:abc], :def)
 ```
 """
 function getpropertynested(
-	nt::NamedTuple,
-	parent_keys::Vector{Symbol},
-	key::Symbol,
-	default = nothing,
+        nt::NamedTuple,
+        parent_keys::Vector{Symbol},
+        key::Symbol,
+        default = nothing
 )
-	result = nothing
-	for (key_, val_) in pairs(nt)
-		result = if key_ in parent_keys && val_ isa NamedTuple && haskey(val_, key)
-			## check if we have a direct match
-			getproperty(val_, key)
-		elseif val_ isa NamedTuple
-			## recurse into child namedtuple
-			getpropertynested(val_, parent_keys, key, default)
-		else
-			nothing
-		end
-		!isnothing(result) && break
-	end
-	return isnothing(result) ? default : result
+    result = nothing
+    for (key_, val_) in pairs(nt)
+        result = if key_ in parent_keys && val_ isa NamedTuple && haskey(val_, key)
+            ## check if we have a direct match
+            getproperty(val_, key)
+        elseif val_ isa NamedTuple
+            ## recurse into child namedtuple
+            getpropertynested(val_, parent_keys, key, default)
+        else
+            nothing
+        end
+        !isnothing(result) && break
+    end
+    return isnothing(result) ? default : result
 end
 
 """
@@ -612,26 +613,26 @@ merge_kwargs_nested(kw, kw2)
 ```
 """
 function merge_kwargs_nested(nt1::NamedTuple, nt2::NamedTuple)
-	result = Dict{Symbol, Any}(pairs(nt1))
+    result = Dict{Symbol, Any}(pairs(nt1))
 
-	for (key, value) in pairs(nt2)
-		if haskey(result, key)
-			if isa(result[key], NamedTuple) && isa(value, NamedTuple)
-				result[key] = merge_kwargs_nested(result[key], value)
-			else
-				result[key] = value
-			end
-		else
-			result[key] = value
-		end
-	end
-	return (; zip(keys(result), values(result))...)
+    for (key, value) in pairs(nt2)
+        if haskey(result, key)
+            if isa(result[key], NamedTuple) && isa(value, NamedTuple)
+                result[key] = merge_kwargs_nested(result[key], value)
+            else
+                result[key] = value
+            end
+        else
+            result[key] = value
+        end
+    end
+    return (; zip(keys(result), values(result))...)
 end
 
 ### Support for binary embeddings
 
 function pack_bits(arr::AbstractArray{<:Number})
-	throw(ArgumentError("Input must be of binary eltype (Bool vs provided $(eltype(arr))). Please convert your matrix to binary before packing."))
+    throw(ArgumentError("Input must be of binary eltype (Bool vs provided $(eltype(arr))). Please convert your matrix to binary before packing."))
 end
 
 """
@@ -665,19 +666,19 @@ binx = unpack_bits(binint)
 ```
 """
 function pack_bits(arr::AbstractMatrix{<:Bool})
-	rows, cols = size(arr)
-	@assert rows % 64 == 0 "Number of rows must be divisable by 64"
-	new_rows = rows ÷ 64
-	reshape(BitArray(arr).chunks, new_rows, cols)
+    rows, cols = size(arr)
+    @assert rows % 64 == 0 "Number of rows must be divisable by 64"
+    new_rows = rows ÷ 64
+    reshape(BitArray(arr).chunks, new_rows, cols)
 end
 function pack_bits(vect::AbstractVector{<:Bool})
-	len = length(vect)
-	@assert len % 64 == 0 "Length must be divisable by 64"
-	BitArray(vect).chunks
+    len = length(vect)
+    @assert len % 64 == 0 "Length must be divisable by 64"
+    BitArray(vect).chunks
 end
 
 function unpack_bits(arr::AbstractArray{<:Number})
-	throw(ArgumentError("Input must be of UInt64 eltype (provided: $(eltype(arr))). Are you sure you've packed this array?"))
+    throw(ArgumentError("Input must be of UInt64 eltype (provided: $(eltype(arr))). Are you sure you've packed this array?"))
 end
 
 """
@@ -714,27 +715,27 @@ binx = unpack_bits(binint)
 #     return Bool[((x >> i) & 1) == 1 for x in packed_vector for i in 0:63]
 # end
 function unpack_bits(packed_vector::AbstractVector{UInt64})
-	n = length(packed_vector)
-	result = Vector{Bool}(undef, n * 64)
-	@inbounds @simd for i in 1:n
-		x = packed_vector[i]
-		for j in 1:64
-			result[(i-1)*64+j] = (x & 1) == 1
-			x >>= 1
-		end
-	end
-	return result
+    n = length(packed_vector)
+    result = Vector{Bool}(undef, n * 64)
+    @inbounds @simd for i in 1:n
+        x = packed_vector[i]
+        for j in 1:64
+            result[(i - 1) * 64 + j] = (x & 1) == 1
+            x >>= 1
+        end
+    end
+    return result
 end
 function unpack_bits(packed_matrix::AbstractMatrix{UInt64})
-	num_rows, num_cols = size(packed_matrix)
-	output_rows = num_rows * 64
-	output_matrix = Matrix{Bool}(undef, output_rows, num_cols)
+    num_rows, num_cols = size(packed_matrix)
+    output_rows = num_rows * 64
+    output_matrix = Matrix{Bool}(undef, output_rows, num_cols)
 
-	for col in axes(packed_matrix, 2)
-		output_matrix[:, col] = unpack_bits(@view(packed_matrix[:, col]))
-	end
+    for col in axes(packed_matrix, 2)
+        output_matrix[:, col] = unpack_bits(@view(packed_matrix[:, col]))
+    end
 
-	return output_matrix
+    return output_matrix
 end
 
 """
@@ -752,18 +753,18 @@ merged_positions, scores = reciprocal_rank_fusion(positions1, positions2, positi
 ```
 """
 function reciprocal_rank_fusion(args...; k::Int = 60)
-	merged = Vector{Int}()
-	scores = Dict{Int, Float64}()
+    merged = Vector{Int}()
+    scores = Dict{Int, Float64}()
 
-	for positions in args
-		for (idx, pos) in enumerate(positions)
-			scores[pos] = get(scores, pos, 0.0) + 1.0 / (k + idx)
-		end
-	end
+    for positions in args
+        for (idx, pos) in enumerate(positions)
+            scores[pos] = get(scores, pos, 0.0) + 1.0 / (k + idx)
+        end
+    end
 
-	merged = [first(item) for item in sort(collect(scores), by = last, rev = true)]
+    merged = [first(item) for item in sort(collect(scores), by = last, rev = true)]
 
-	return merged, scores
+    return merged, scores
 end
 
 """
@@ -788,24 +789,24 @@ cc = CandidateChunks(:my_index, merged_pos, [scores_dict[pos] for pos in merged_
 ```
 """
 function reciprocal_rank_fusion(
-	positions1::AbstractVector{<:Integer},
-	scores1::AbstractVector{<:T},
-	positions2::AbstractVector{<:Integer},
-	scores2::AbstractVector{<:T}; k::Int = 60,
+        positions1::AbstractVector{<:Integer},
+        scores1::AbstractVector{<:T},
+        positions2::AbstractVector{<:Integer},
+        scores2::AbstractVector{<:T}; k::Int = 60
 ) where {T <: Real}
-	merged = Vector{Int}()
-	scores = Dict{Int, T}()
+    merged = Vector{Int}()
+    scores = Dict{Int, T}()
 
-	for (idx, (pos, sc)) in enumerate(zip(positions1, scores1))
-		scores[pos] = get(scores, pos, 0.0) + sc / (k + idx)
-	end
-	for (idx, (pos, sc)) in enumerate(zip(positions2, scores2))
-		scores[pos] = get(scores, pos, 0.0) + sc / (k + idx)
-	end
+    for (idx, (pos, sc)) in enumerate(zip(positions1, scores1))
+        scores[pos] = get(scores, pos, 0.0) + sc / (k + idx)
+    end
+    for (idx, (pos, sc)) in enumerate(zip(positions2, scores2))
+        scores[pos] = get(scores, pos, 0.0) + sc / (k + idx)
+    end
 
-	merged = [first(item) for item in sort(collect(scores), by = last, rev = true)]
+    merged = [first(item) for item in sort(collect(scores), by = last, rev = true)]
 
-	return merged, scores
+    return merged, scores
 end
 
 """
@@ -820,12 +821,12 @@ scaled_x = score_to_unit_scale(x)
 ```
 """
 function score_to_unit_scale(x::AbstractVector{T}) where {T <: Real}
-	isempty(x) && return x
-	##
-	ex = extrema(x)
-	if ex[2] - ex[1] < eps(T)
-		ones(T, length(x))
-	else
-		(x .- ex[1]) ./ (ex[2] - ex[1] + eps(T))
-	end
+    isempty(x) && return x
+    ##
+    ex = extrema(x)
+    if ex[2] - ex[1] < eps(T)
+        ones(T, length(x))
+    else
+        (x .- ex[1]) ./ (ex[2] - ex[1] + eps(T))
+    end
 end

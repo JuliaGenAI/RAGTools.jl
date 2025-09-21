@@ -14,32 +14,31 @@
 Base.parent(index::AbstractDocumentIndex) = index
 indexid(index::AbstractDocumentIndex) = index.id
 
-
 function chunkdata(index::AbstractDocumentIndex)
-	throw(ArgumentError("`chunkdata` not implemented for $(typeof(index))"))
+    throw(ArgumentError("`chunkdata` not implemented for $(typeof(index))"))
 end
 function chunkdata(index::AbstractDocumentIndex, chunk_idx::AbstractVector{<:Integer})
-	throw(ArgumentError("`chunkdata` not implemented for $(typeof(index)) and chunk indices: $(typeof(chunk_idx))"))
+    throw(ArgumentError("`chunkdata` not implemented for $(typeof(index)) and chunk indices: $(typeof(chunk_idx))"))
 end
 
 function embeddings(index::AbstractDocumentIndex)
-	throw(ArgumentError("`embeddings` not implemented for $(typeof(index))"))
+    throw(ArgumentError("`embeddings` not implemented for $(typeof(index))"))
 end
 
 function tags(index::AbstractDocumentIndex)
-	throw(ArgumentError("`tags` not implemented for $(typeof(index))"))
+    throw(ArgumentError("`tags` not implemented for $(typeof(index))"))
 end
 
 function tags_vocab(index::AbstractDocumentIndex)
-	throw(ArgumentError("`tags_vocab` not implemented for $(typeof(index))"))
+    throw(ArgumentError("`tags_vocab` not implemented for $(typeof(index))"))
 end
 
 function extras(index::AbstractDocumentIndex)
-	throw(ArgumentError("`extras` not implemented for $(typeof(index))"))
+    throw(ArgumentError("`extras` not implemented for $(typeof(index))"))
 end
 
 function Base.vcat(i1::AbstractDocumentIndex, i2::AbstractDocumentIndex)
-	throw(ArgumentError("Not implemented"))
+    throw(ArgumentError("Not implemented"))
 end
 
 """ 
@@ -48,15 +47,15 @@ end
 
 chunkdata(index::AbstractChunkIndex) = index.chunkdata
 Base.@propagate_inbounds function chunkdata(
-	index::AbstractChunkIndex, 
-	chunk_idx::AbstractVector{<:Integer},
+        index::AbstractChunkIndex,
+        chunk_idx::AbstractVector{<:Integer}
 )
-	## We need this accessor because different chunk indices can have chunks in different dimensions!!
-	chkdata = chunkdata(index)
-	if isnothing(chkdata)
-		return nothing
-	end
-	return view(chkdata, :, chunk_idx)
+    ## We need this accessor because different chunk indices can have chunks in different dimensions!!
+    chkdata = chunkdata(index)
+    if isnothing(chkdata)
+        return nothing
+    end
+    return view(chkdata, :, chunk_idx)
 end
 
 HasEmbeddings(::AbstractChunkIndex) = false
@@ -76,45 +75,44 @@ Translate positions to the parent index. Useful to convert between positions in 
 Used whenever a `chunkdata()` is used to re-align positions in case index is a view.
 """
 function translate_positions_to_parent(index::AbstractChunkIndex, positions::AbstractVector{<:Integer})
-	return positions
+    return positions
 end
 
 Base.var"=="(i1::AbstractChunkIndex, i2::AbstractChunkIndex) = false
 
 function Base.var"=="(i1::T, i2::T) where {T <: AbstractChunkIndex}
-	((sources(i1) == sources(i2)) && (tags_vocab(i1) == tags_vocab(i2)) &&
-	 (chunkdata(i1) == chunkdata(i2)) && (chunks(i1) == chunks(i2)) &&
-	 (tags(i1) == tags(i2)) && (extras(i1) == extras(i2)))
+    ((sources(i1) == sources(i2)) && (tags_vocab(i1) == tags_vocab(i2)) &&
+     (chunkdata(i1) == chunkdata(i2)) && (chunks(i1) == chunks(i2)) &&
+     (tags(i1) == tags(i2)) && (extras(i1) == extras(i2)))
 end
 
-
 function Base.vcat(i1::AbstractChunkIndex, i2::AbstractChunkIndex)
-	throw(ArgumentError("Not implemented"))
+    throw(ArgumentError("Not implemented"))
 end
 
 function Base.vcat(i1::T, i2::T) where {T <: AbstractChunkIndex}
-	tags_, tags_vocab_ = if (isnothing(tags(i1)) || isnothing(tags(i2)))
-		nothing, nothing
-	elseif tags_vocab(i1) == tags_vocab(i2)
-		vcat(tags(i1), tags(i2)), tags_vocab(i1)
-	else
-		vcat_labeled_matrices(tags(i1), tags_vocab(i1), tags(i2), tags_vocab(i2))
-	end
-	chunkdata_ = (isnothing(chunkdata(i1)) || isnothing(chunkdata(i2))) ? nothing :
-				 hcat(chunkdata(i1), chunkdata(i2))
-	extras_ = if isnothing(extras(i1)) || isnothing(extras(i2))
-		nothing
-	else
-		vcat(extras(i1), extras(i2))
-	end
-	T(indexid(i1), vcat(chunks(i1), chunks(i2)),
-		chunkdata_,
-		tags_,
-		tags_vocab_,
-		vcat(sources(i1), sources(i2)),
-		extras_)
+    tags_,
+    tags_vocab_ = if (isnothing(tags(i1)) || isnothing(tags(i2)))
+        nothing, nothing
+    elseif tags_vocab(i1) == tags_vocab(i2)
+        vcat(tags(i1), tags(i2)), tags_vocab(i1)
+    else
+        vcat_labeled_matrices(tags(i1), tags_vocab(i1), tags(i2), tags_vocab(i2))
+    end
+    chunkdata_ = (isnothing(chunkdata(i1)) || isnothing(chunkdata(i2))) ? nothing :
+                 hcat(chunkdata(i1), chunkdata(i2))
+    extras_ = if isnothing(extras(i1)) || isnothing(extras(i2))
+        nothing
+    else
+        vcat(extras(i1), extras(i2))
+    end
+    T(indexid(i1), vcat(chunks(i1), chunks(i2)),
+        chunkdata_,
+        tags_,
+        tags_vocab_,
+        vcat(sources(i1), sources(i2)),
+        extras_)
 end
-
 
 """
 	ChunkEmbeddingsIndex
@@ -137,23 +135,23 @@ Previously, this struct was called `ChunkIndex`.
 - `extras::Union{Nothing, AbstractVector}`: additional data, eg, metadata, source code, etc.
 """
 @kwdef struct ChunkEmbeddingsIndex{
-	T1 <: AbstractString,
-	T2 <: Union{Nothing, AbstractMatrix{<:Real}},
-	T3 <: Union{Nothing, AbstractMatrix{<:Bool}},
-	T4 <: Union{Nothing, AbstractVector},
+    T1 <: AbstractString,
+    T2 <: Union{Nothing, AbstractMatrix{<:Real}},
+    T3 <: Union{Nothing, AbstractMatrix{<:Bool}},
+    T4 <: Union{Nothing, AbstractVector}
 } <: AbstractChunkIndex
-	id::Symbol = gensym("ChunkEmbeddingsIndex")
-	# underlying document chunks / snippets
-	chunks::Vector{T1}
-	# for semantic search
-	embeddings::T2 = nothing
-	# for exact search, filtering, etc.
-	# expected to be some sparse structure, eg, sparse matrix or nothing
-	# column oriented, ie, each column is one item in `tags_vocab` and rows are the chunks
-	tags::T3 = nothing
-	tags_vocab::Union{Nothing, Vector{<:AbstractString}} = nothing
-	sources::Vector{<:AbstractString}
-	extras::T4 = nothing
+    id::Symbol = gensym("ChunkEmbeddingsIndex")
+    # underlying document chunks / snippets
+    chunks::Vector{T1}
+    # for semantic search
+    embeddings::T2 = nothing
+    # for exact search, filtering, etc.
+    # expected to be some sparse structure, eg, sparse matrix or nothing
+    # column oriented, ie, each column is one item in `tags_vocab` and rows are the chunks
+    tags::T3 = nothing
+    tags_vocab::Union{Nothing, Vector{<:AbstractString}} = nothing
+    sources::Vector{<:AbstractString}
+    extras::T4 = nothing
 end
 
 const ChunkIndex = ChunkEmbeddingsIndex # for backward compatibility
@@ -162,7 +160,6 @@ embeddings(index::ChunkEmbeddingsIndex) = index.embeddings
 HasEmbeddings(::ChunkEmbeddingsIndex) = true
 chunkdata(index::ChunkEmbeddingsIndex) = embeddings(index)
 # It's column aligned so we don't have to re-define `chunkdata(index, chunk_idx)`
-
 
 """
 	ChunkKeywordsIndex
@@ -220,27 +217,26 @@ airag(cfg, index_keywords;
 ```
 """
 @kwdef struct ChunkKeywordsIndex{
-	T1 <: AbstractString,
-	T2 <: Union{Nothing, DocumentTermMatrix},
-	T3 <: Union{Nothing, AbstractMatrix{<:Bool}},
-	T4 <: Union{Nothing, AbstractVector},
+    T1 <: AbstractString,
+    T2 <: Union{Nothing, DocumentTermMatrix},
+    T3 <: Union{Nothing, AbstractMatrix{<:Bool}},
+    T4 <: Union{Nothing, AbstractVector}
 } <: AbstractChunkIndex
-	id::Symbol = gensym("ChunkKeywordsIndex")
-	# underlying document chunks / snippets
-	chunks::Vector{T1}
-	# for similarity search
-	chunkdata::T2 = nothing
-	# for exact search, filtering, etc.
-	# expected to be some sparse structure, eg, sparse matrix or nothing
-	# column oriented, ie, each column is one item in `tags_vocab` and rows are the chunks
-	tags::T3 = nothing
-	tags_vocab::Union{Nothing, Vector{<:AbstractString}} = nothing
-	sources::Vector{<:AbstractString}
-	extras::T4 = nothing
+    id::Symbol = gensym("ChunkKeywordsIndex")
+    # underlying document chunks / snippets
+    chunks::Vector{T1}
+    # for similarity search
+    chunkdata::T2 = nothing
+    # for exact search, filtering, etc.
+    # expected to be some sparse structure, eg, sparse matrix or nothing
+    # column oriented, ie, each column is one item in `tags_vocab` and rows are the chunks
+    tags::T3 = nothing
+    tags_vocab::Union{Nothing, Vector{<:AbstractString}} = nothing
+    sources::Vector{<:AbstractString}
+    extras::T4 = nothing
 end
 
 HasKeywords(::ChunkKeywordsIndex) = true
-
 
 """ 
     chunkdata(index::ChunkKeywordsIndex, chunk_idx::AbstractVector{<:Integer})
@@ -252,17 +248,16 @@ Access chunkdata for a subset of chunks.
 - `chunk_idx::AbstractVector{<:Integer}`: the indices of the chunks to access
 """
 Base.@propagate_inbounds function chunkdata(
-	index::ChunkKeywordsIndex, 
-	chunk_idx::AbstractVector{<:Integer},
+        index::ChunkKeywordsIndex,
+        chunk_idx::AbstractVector{<:Integer}
 )
-	chkdata = index.chunkdata
-	if isnothing(chkdata)
-		return nothing
-	end
-	## Keyword index is row-oriented, ie, chunks are rows, tokens are columns 
-	return view(chkdata, chunk_idx, :)
+    chkdata = index.chunkdata
+    if isnothing(chkdata)
+        return nothing
+    end
+    ## Keyword index is row-oriented, ie, chunks are rows, tokens are columns 
+    return view(chkdata, chunk_idx, :)
 end
-
 
 """
 	SubChunkIndex
@@ -301,38 +296,38 @@ RT.positions(sub_index)
 ```
 """
 @kwdef struct SubChunkIndex{T <: AbstractChunkIndex} <: AbstractChunkIndex
-	parent::T
-	positions::Vector{Int}
+    parent::T
+    positions::Vector{Int}
 end
 
 Base.@propagate_inbounds function SubChunkIndex(index::SubChunkIndex, cc::CandidateChunks)
-	pos = indexid(index) == indexid(cc) ? positions(cc) : Int[]
-	intersect_pos = intersect(pos, positions(index))
-	@boundscheck let chk_vector = chunks(parent(index))
-		if !checkbounds(Bool, axes(chk_vector, 1), intersect_pos)
-			## Avoid printing huge position arrays, show the extremas of the attempted range
-			max_pos = extrema(intersect_pos)
-			throw(BoundsError(chk_vector, max_pos))
-		end
-	end
-	return SubChunkIndex(parent(index), intersect_pos)
+    pos = indexid(index) == indexid(cc) ? positions(cc) : Int[]
+    intersect_pos = intersect(pos, positions(index))
+    @boundscheck let chk_vector = chunks(parent(index))
+        if !checkbounds(Bool, axes(chk_vector, 1), intersect_pos)
+            ## Avoid printing huge position arrays, show the extremas of the attempted range
+            max_pos = extrema(intersect_pos)
+            throw(BoundsError(chk_vector, max_pos))
+        end
+    end
+    return SubChunkIndex(parent(index), intersect_pos)
 end
 
 Base.@propagate_inbounds function SubChunkIndex(
-	index::SubChunkIndex,
-	cc::MultiCandidateChunks,
+        index::SubChunkIndex,
+        cc::MultiCandidateChunks
 )
-	valid_items = findall(==(indexid(index)), indexids(cc))
-	valid_positions = positions(cc)[valid_items]
-	intersect_pos = intersect(valid_positions, positions(index))
-	@boundscheck let chk_vector = chunks(parent(index))
-		if !checkbounds(Bool, axes(chk_vector, 1), intersect_pos)
-			## Avoid printing huge position arrays, show the extremas of the attempted range
-			max_pos = extrema(intersect_pos)
-			throw(BoundsError(chk_vector, max_pos))
-		end
-	end
-	return SubChunkIndex(parent(index), intersect_pos)
+    valid_items = findall(==(indexid(index)), indexids(cc))
+    valid_positions = positions(cc)[valid_items]
+    intersect_pos = intersect(valid_positions, positions(index))
+    @boundscheck let chk_vector = chunks(parent(index))
+        if !checkbounds(Bool, axes(chk_vector, 1), intersect_pos)
+            ## Avoid printing huge position arrays, show the extremas of the attempted range
+            max_pos = extrema(intersect_pos)
+            throw(BoundsError(chk_vector, max_pos))
+        end
+    end
+    return SubChunkIndex(parent(index), intersect_pos)
 end
 
 indexid(index::SubChunkIndex) = parent(index) |> indexid
@@ -342,76 +337,76 @@ HasEmbeddings(index::SubChunkIndex) = HasEmbeddings(parent(index))
 HasKeywords(index::SubChunkIndex) = HasKeywords(parent(index))
 
 Base.@propagate_inbounds function chunks(index::SubChunkIndex)
-	view(chunks(parent(index)), positions(index))
+    view(chunks(parent(index)), positions(index))
 end
 
 Base.@propagate_inbounds function sources(index::SubChunkIndex)
-	view(sources(parent(index)), positions(index))
+    view(sources(parent(index)), positions(index))
 end
 
 Base.@propagate_inbounds function chunkdata(index::SubChunkIndex)
-	chunkdata(parent(index), positions(index))
+    chunkdata(parent(index), positions(index))
 end
 "Access chunkdata for a subset of chunks, `chunk_idx` is a vector of chunk indices in the index"
 Base.@propagate_inbounds function chunkdata(
-	index::SubChunkIndex, chunk_idx::AbstractVector{<:Integer})
-	## We need this accessor because different chunk indices can have chunks in different dimensions!!
-	index_chunk_idx = translate_positions_to_parent(index, chunk_idx)
-	pos = intersect(positions(index), index_chunk_idx)
-	chkdata = chunkdata(parent(index), pos)
+        index::SubChunkIndex, chunk_idx::AbstractVector{<:Integer})
+    ## We need this accessor because different chunk indices can have chunks in different dimensions!!
+    index_chunk_idx = translate_positions_to_parent(index, chunk_idx)
+    pos = intersect(positions(index), index_chunk_idx)
+    chkdata = chunkdata(parent(index), pos)
 end
 
 function embeddings(index::SubChunkIndex)
-	if HasEmbeddings(index)
-		view(embeddings(parent(index)), :, positions(index))
-	else
-		throw(ArgumentError("`embeddings` not implemented for $(typeof(index))"))
-	end
+    if HasEmbeddings(index)
+        view(embeddings(parent(index)), :, positions(index))
+    else
+        throw(ArgumentError("`embeddings` not implemented for $(typeof(index))"))
+    end
 end
 
 function tags(index::SubChunkIndex)
-	tagsdata = tags(parent(index))
-	isnothing(tagsdata) && return nothing
-	view(tagsdata, positions(index), :)
+    tagsdata = tags(parent(index))
+    isnothing(tagsdata) && return nothing
+    view(tagsdata, positions(index), :)
 end
 
 function tags_vocab(index::SubChunkIndex)
-	tags_vocab(parent(index))
+    tags_vocab(parent(index))
 end
 
 function extras(index::SubChunkIndex)
-	extrasdata = extras(parent(index))
-	isnothing(extrasdata) && return nothing
-	view(extrasdata, positions(index))
+    extrasdata = extras(parent(index))
+    isnothing(extrasdata) && return nothing
+    view(extrasdata, positions(index))
 end
 
 function Base.vcat(i1::SubChunkIndex, i2::SubChunkIndex)
-	throw(ArgumentError("vcat not implemented for type $(typeof(i1)) and $(typeof(i2))"))
+    throw(ArgumentError("vcat not implemented for type $(typeof(i1)) and $(typeof(i2))"))
 end
 
 function Base.vcat(i1::T, i2::T) where {T <: SubChunkIndex}
-	## Check if can be merged
-	if indexid(parent(i1)) != indexid(parent(i2))
-		throw(ArgumentError("Parent indices must be the same (provided: $(indexid(parent(i1))) and $(indexid(parent(i2))))"))
-	end
-	return SubChunkIndex(parent(i1), vcat(positions(i1), positions(i2)))
+    ## Check if can be merged
+    if indexid(parent(i1)) != indexid(parent(i2))
+        throw(ArgumentError("Parent indices must be the same (provided: $(indexid(parent(i1))) and $(indexid(parent(i2))))"))
+    end
+    return SubChunkIndex(parent(i1), vcat(positions(i1), positions(i2)))
 end
 
 function Base.unique(index::SubChunkIndex)
-	return SubChunkIndex(parent(index), unique(positions(index)))
+    return SubChunkIndex(parent(index), unique(positions(index)))
 end
 
 function Base.length(index::SubChunkIndex)
-	return length(positions(index))
+    return length(positions(index))
 end
 
 function Base.isempty(index::SubChunkIndex)
-	return isempty(positions(index))
+    return isempty(positions(index))
 end
 
 function Base.show(io::IO, index::SubChunkIndex)
-	print(io,
-		"A view of $(typeof(parent(index))|>nameof) (id: $(indexid(parent(index)))) with $(length(index)) chunks")
+    print(io,
+        "A view of $(typeof(parent(index))|>nameof) (id: $(indexid(parent(index)))) with $(length(index)) chunks")
 end
 
 """
@@ -423,12 +418,11 @@ Translate positions to the parent index. Useful to convert between positions in 
 Used whenever a `chunkdata()` or `tags()` are used to re-align positions to the "parent" index.
 """
 Base.@propagate_inbounds function translate_positions_to_parent(
-	index::SubChunkIndex, pos::AbstractVector{<:Integer},
+        index::SubChunkIndex, pos::AbstractVector{<:Integer}
 )
-	sub_positions = positions(index)
-	return sub_positions[pos]
+    sub_positions = positions(index)
+    return sub_positions[pos]
 end
-
 
 """
 	MultiIndex
@@ -466,16 +460,16 @@ pprint(msg) # prettify the answer
 
 """
 @kwdef struct MultiIndex <: AbstractMultiIndex
-	id::Symbol = gensym("MultiIndex")
-	indexes::Vector{<:AbstractChunkIndex} = AbstractChunkIndex[]
+    id::Symbol = gensym("MultiIndex")
+    indexes::Vector{<:AbstractChunkIndex} = AbstractChunkIndex[]
 end
 
 function MultiIndex(indexes::AbstractChunkIndex...)
-	MultiIndex(; indexes = collect(indexes))
+    MultiIndex(; indexes = collect(indexes))
 end
 
 function MultiIndex(indexes::AbstractVector{<:AbstractChunkIndex})
-	MultiIndex(; indexes = indexes)
+    MultiIndex(; indexes = indexes)
 end
 
 indexes(index::MultiIndex) = index.indexes
@@ -488,18 +482,18 @@ HasKeywords(index::AbstractMultiIndex) = any(HasKeywords, indexes(index))
 Check that each index has a counterpart in the other MultiIndex.
 """
 function Base.var"=="(i1::MultiIndex, i2::MultiIndex)
-	length(indexes(i1)) != length(indexes(i2)) && return false
-	for i in i1.indexes
-		if !(i in i2.indexes)
-			return false
-		end
-	end
-	for i in i2.indexes
-		if !(i in i1.indexes)
-			return false
-		end
-	end
-	return true
+    length(indexes(i1)) != length(indexes(i2)) && return false
+    for i in i1.indexes
+        if !(i in i2.indexes)
+            return false
+        end
+    end
+    for i in i2.indexes
+        if !(i in i1.indexes)
+            return false
+        end
+    end
+    return true
 end
 
 """
@@ -508,9 +502,9 @@ end
 Get the field of a candidate chunk from an index.
 """
 function Base.getindex(
-    ci::AbstractDocumentIndex,
-    candidate::AbstractCandidateChunks,
-    field::Symbol
+        ci::AbstractDocumentIndex,
+        candidate::AbstractCandidateChunks,
+        field::Symbol
 )
     throw(ArgumentError("Not implemented"))
 end
@@ -526,10 +520,10 @@ function Base.getindex(index::AbstractMultiIndex, id::Symbol)
 end
 
 function Base.getindex(
-    ci::AbstractChunkIndex,
-    candidate::CandidateChunks{TP, TD},
-    field::Symbol = :chunks; 
-    sorted::Bool = false
+        ci::AbstractChunkIndex,
+        candidate::CandidateChunks{TP, TD},
+        field::Symbol = :chunks;
+        sorted::Bool = false
 ) where {TP <: Integer, TD <: Real}
     @assert field in [:chunks, :embeddings, :chunkdata, :sources, :scores] "Only `chunks`, `embeddings`, `chunkdata`, `sources`, `scores` fields are supported for now"
     ## embeddings is a compatibility alias, use chunkdata
@@ -569,9 +563,9 @@ function Base.getindex(
 end
 
 function Base.getindex(
-    mi::MultiIndex,
-    candidate::CandidateChunks{TP, TD},
-    field::Symbol = :chunks; sorted::Bool = false
+        mi::MultiIndex,
+        candidate::CandidateChunks{TP, TD},
+        field::Symbol = :chunks; sorted::Bool = false
 ) where {TP <: Integer, TD <: Real}
     ## Always sorted!
     @assert field in [:chunks, :sources, :scores] "Only `chunks`, `sources`, `scores` fields are supported for now"
@@ -588,10 +582,10 @@ function Base.getindex(
 end
 
 function Base.getindex(
-    ci::AbstractChunkIndex,
-    candidate::MultiCandidateChunks{TP, TD},
-    field::Symbol = :chunks; 
-    sorted::Bool = false
+        ci::AbstractChunkIndex,
+        candidate::MultiCandidateChunks{TP, TD},
+        field::Symbol = :chunks;
+        sorted::Bool = false
 ) where {TP <: Integer, TD <: Real}
     @assert field in [:chunks, :embeddings, :chunkdata, :sources, :scores] "Only `chunks`, `embeddings`, `chunkdata`, `sources`, `scores` fields are supported for now"
 
@@ -604,10 +598,10 @@ function Base.getindex(
 end
 
 function Base.getindex(
-    mi::MultiIndex,
-    candidate::MultiCandidateChunks{TP, TD},
-    field::Symbol = :chunks; 
-    sorted::Bool = true
+        mi::MultiIndex,
+        candidate::MultiCandidateChunks{TP, TD},
+        field::Symbol = :chunks;
+        sorted::Bool = true
 ) where {TP <: Integer, TD <: Real}
     @assert field in [:chunks, :sources, :scores] "Only `chunks`, `sources`, and `scores` fields are supported for now"
     if sorted
@@ -635,8 +629,8 @@ function Base.view(index::AbstractDocumentIndex, cc::AbstractCandidateChunks)
 end
 
 Base.@propagate_inbounds function Base.view(
-    index::AbstractChunkIndex, 
-    cc::CandidateChunks
+        index::AbstractChunkIndex,
+        cc::CandidateChunks
 )
     @boundscheck let chk_vector = chunks(parent(index))
         if !checkbounds(Bool, axes(chk_vector, 1), positions(cc))
@@ -654,8 +648,8 @@ Base.@propagate_inbounds function Base.view(index::SubChunkIndex, cc::CandidateC
 end
 
 Base.@propagate_inbounds function Base.view(
-    index::AbstractChunkIndex, 
-    cc::MultiCandidateChunks
+        index::AbstractChunkIndex,
+        cc::MultiCandidateChunks
 )
     valid_items = findall(==(indexid(index)), indexids(cc))
     valid_positions = positions(cc)[valid_items]

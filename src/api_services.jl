@@ -16,25 +16,24 @@ Lightweight wrapper around the Cohere API. See https://cohere.com/docs for more 
 - `kwargs`: Any additional keyword arguments to pass to the Cohere API.
 """
 function cohere_api(;
-	api_key::AbstractString,
-	endpoint::String,
-	url::AbstractString = "https://api.cohere.ai/v1",
-	http_kwargs::NamedTuple = NamedTuple(),
-	kwargs...,
+        api_key::AbstractString,
+        endpoint::String,
+        url::AbstractString = "https://api.cohere.ai/v1",
+        http_kwargs::NamedTuple = NamedTuple(),
+        kwargs...
 )
+    @assert endpoint in ["chat", "generate", "embed", "rerank", "classify"] "Only 'chat', 'generate',`embed`,`rerank`,`classify` Cohere endpoints are supported."
+    @assert !isempty(api_key) "Cohere `api_key` cannot be empty. Check `PT.COHERE_API_KEY` or pass it as a keyword argument."
+    ##
+    input_body = Dict(kwargs...)
 
-	@assert endpoint in ["chat", "generate", "embed", "rerank", "classify"] "Only 'chat', 'generate',`embed`,`rerank`,`classify` Cohere endpoints are supported."
-	@assert !isempty(api_key) "Cohere `api_key` cannot be empty. Check `PT.COHERE_API_KEY` or pass it as a keyword argument."
-	##
-	input_body = Dict(kwargs...)
-
-	# https://api.cohere.ai/v1/rerank
-	api_url = string(url, "/", endpoint)
-	resp = HTTP.post(api_url,
-		PT.auth_header(api_key),
-		JSON3.write(input_body); http_kwargs...)
-	body = JSON3.read(resp.body)
-	return (; response = body)
+    # https://api.cohere.ai/v1/rerank
+    api_url = string(url, "/", endpoint)
+    resp = HTTP.post(api_url,
+        PT.auth_header(api_key),
+        JSON3.write(input_body); http_kwargs...)
+    body = JSON3.read(resp.body)
+    return (; response = body)
 end
 
 """
@@ -48,24 +47,24 @@ end
 Sends API requests to [Tavily](https://tavily.com) and returns the response.
 """
 function tavily_api(;
-	api_key::AbstractString,
-	endpoint::String = "search",
-	url::AbstractString = "https://api.tavily.com",
-	http_kwargs::NamedTuple = NamedTuple(),
-	kwargs...,
+        api_key::AbstractString,
+        endpoint::String = "search",
+        url::AbstractString = "https://api.tavily.com",
+        http_kwargs::NamedTuple = NamedTuple(),
+        kwargs...
 )
-	@assert !isempty(api_key) "Tavily `api_key` cannot be empty. Check `PT.TAVILY_API_KEY` or pass it as a keyword argument."
+    @assert !isempty(api_key) "Tavily `api_key` cannot be empty. Check `PT.TAVILY_API_KEY` or pass it as a keyword argument."
 
-	## api_key is sent in the POST body, not headers
-	input_body = Dict("api_key" => api_key, kwargs...)
+    ## api_key is sent in the POST body, not headers
+    input_body = Dict("api_key" => api_key, kwargs...)
 
-	# eg, https://api.tavily.com/search
-	api_url = string(url, "/", endpoint)
-	headers = PT.auth_header(nothing) # no API key provided
-	resp = HTTP.post(api_url, headers,
-		JSON3.write(input_body); http_kwargs...)
-	body = JSON3.read(resp.body)
-	return (; response = body, status = resp.status)
+    # eg, https://api.tavily.com/search
+    api_url = string(url, "/", endpoint)
+    headers = PT.auth_header(nothing) # no API key provided
+    resp = HTTP.post(api_url, headers,
+        JSON3.write(input_body); http_kwargs...)
+    body = JSON3.read(resp.body)
+    return (; response = body, status = resp.status)
 end
 
 """
@@ -98,26 +97,26 @@ See [Rest API documentation](https://docs.tavily.com/docs/tavily-api/rest_api) f
 
 """
 function create_websearch(
-	query::AbstractString;
-	api_key::AbstractString = PT.TAVILY_API_KEY,
-	search_depth::AbstractString = "basic",
-	include_answer::Bool = false,
-	include_raw_content::Bool = false,
-	max_results::Integer = 5,
-	include_images::Bool = false,
-	include_domains::AbstractVector{<:AbstractString} = String[],
-	exclude_domains::AbstractVector{<:AbstractString} = String[],
+        query::AbstractString;
+        api_key::AbstractString = PT.TAVILY_API_KEY,
+        search_depth::AbstractString = "basic",
+        include_answer::Bool = false,
+        include_raw_content::Bool = false,
+        max_results::Integer = 5,
+        include_images::Bool = false,
+        include_domains::AbstractVector{<:AbstractString} = String[],
+        exclude_domains::AbstractVector{<:AbstractString} = String[]
 )
-	@assert search_depth in ["basic", "advanced"] "Search depth must be either 'basic' or 'advanced'"
-	@assert max_results > 0 "Max results must be a positive integer"
+    @assert search_depth in ["basic", "advanced"] "Search depth must be either 'basic' or 'advanced'"
+    @assert max_results > 0 "Max results must be a positive integer"
 
-	tavily_api(; api_key, endpoint = "search",
-		query,
-		search_depth,
-		include_answer,
-		include_raw_content,
-		max_results,
-		include_images,
-		include_domains,
-		exclude_domains)
+    tavily_api(; api_key, endpoint = "search",
+        query,
+        search_depth,
+        include_answer,
+        include_raw_content,
+        max_results,
+        include_images,
+        include_domains,
+        exclude_domains)
 end

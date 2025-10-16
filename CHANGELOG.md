@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.8.0]
+
+### Updated
+- Increased compat for PromptingTools to v0.83
+
+
 ## [0.7.0]
 
 ### Updated

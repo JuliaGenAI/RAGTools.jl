@@ -1,7 +1,7 @@
 name = "RAGTools"
 uuid = "16ddad29-bbe8-45a7-857d-3d9514eb0023"
 authors = ["J S <49557684+svilupp@users.noreply.github.com> and contributors"]
-version = "0.7.0"
+version = "0.8.0"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
@@ -29,7 +29,7 @@ HTTP = "1.10.15"
 JSON3 = "1.14.1"
 LinearAlgebra = "1"
 ProgressMeter = "1.10"
-PromptingTools = "0.75 - 0.82"
+PromptingTools = "0.75 - 0.83"
 Random = "1"
 Snowball = "0.1"
 SparseArrays = "1"

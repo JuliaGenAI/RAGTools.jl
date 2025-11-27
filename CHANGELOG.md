@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Updated
 - Moved up compat for PromptingTools to v0.87 (fixing api key bug for embedding models)
 
-### Fixed
+### Fixed
 - Fixed mock embedding response in the tests
 
 ## [0.9.0]

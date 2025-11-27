@@ -65,7 +65,8 @@ end
     @test_throws AssertionError get_embeddings(BitPackedBatchEmbedder(), String[])
 
     # corresponds to OpenAI API v1
-    response1 = Dict(:data => [Dict(:embedding => ones(Float32, 128)),
+    response1 = Dict(
+        :data => [Dict(:embedding => ones(Float32, 128)),
             Dict(:embedding => ones(Float32, 128))],
         :usage => Dict(:total_tokens => 2, :prompt_tokens => 2, :completion_tokens => 0))
     schema = TestEchoOpenAISchema(; response = response1, status = 200)

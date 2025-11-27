@@ -259,71 +259,72 @@ end
         return HTTP.Response(200, JSON3.write(response))
     end
 
-    ## Index
-    index = ChunkEmbeddingsIndex(;
-        sources = [".", ".", "."],
-        chunks = ["a", "b", "c"],
-        embeddings = zeros(128, 3),
-        tags = vcat(trues(2, 2), falses(1, 2)),
-        tags_vocab = ["yes", "no"])
-    ## Sub-calls
-    question_emb = aiembed(["x", "x"];
-        model = "mock-emb",
-        api_kwargs = (; url = "http://localhost:$(PORT)"))
-    @test question_emb.content == ones(128)
-    metadata_msg = aiextract(:RAGExtractMetadataShort; return_type = MaybeTags,
-        text = "x",
-        model = "mock-meta", api_kwargs = (; url = "http://localhost:$(PORT)"))
-    @test metadata_msg.content.items == [Tag("yes", "category")]
-    answer_msg = aigenerate(:RAGAnswerFromContext;
-        question = "Time?",
-        context = "XYZ",
-        model = "mock-gen", api_kwargs = (; url = "http://localhost:$(PORT)"))
-    @test occursin("Time?", answer_msg.content)
-    ## E2E - default type
-    msg = airag(index; question = "Time?",
-        retriever_kwargs = (;
-            tagger_kwargs = (; model = "mock-gen", tag = ["yes"]), embedder_kwargs = (;
-                model = "mock-emb")),
-        generator_kwargs = (;
-            answerer_kwargs = (; model = "mock-gen"), embedder_kwargs = (;
-                model = "mock-emb")),
-        api_kwargs = (; url = "http://localhost:$(PORT)"),
-        return_all = false)
-    @test occursin("Time?", msg.content)
+    try
+        ## Index
+        index = ChunkEmbeddingsIndex(;
+            sources = [".", ".", "."],
+            chunks = ["a", "b", "c"],
+            embeddings = zeros(128, 3),
+            tags = vcat(trues(2, 2), falses(1, 2)),
+            tags_vocab = ["yes", "no"])
+        ## Sub-calls
+        question_emb = aiembed(["x", "x"];
+            model = "mock-emb",
+            api_kwargs = (; url = "http://localhost:$(PORT)"))
+        @test question_emb.content == ones(128)
+        metadata_msg = aiextract(:RAGExtractMetadataShort; return_type = MaybeTags,
+            text = "x",
+            model = "mock-meta", api_kwargs = (; url = "http://localhost:$(PORT)"))
+        @test metadata_msg.content.items == [Tag("yes", "category")]
+        answer_msg = aigenerate(:RAGAnswerFromContext;
+            question = "Time?",
+            context = "XYZ",
+            model = "mock-gen", api_kwargs = (; url = "http://localhost:$(PORT)"))
+        @test occursin("Time?", answer_msg.content)
+        ## E2E - default type
+        msg = airag(index; question = "Time?",
+            retriever_kwargs = (;
+                tagger_kwargs = (; model = "mock-gen", tag = ["yes"]), embedder_kwargs = (;
+                    model = "mock-emb")),
+            generator_kwargs = (;
+                answerer_kwargs = (; model = "mock-gen"), embedder_kwargs = (;
+                    model = "mock-emb")),
+            api_kwargs = (; url = "http://localhost:$(PORT)"),
+            return_all = false)
+        @test occursin("Time?", msg.content)
 
-    ## E2E - with type
-    msg = airag(RAGConfig(), index; question = "Time?",
-        retriever_kwargs = (;
-            tagger_kwargs = (; model = "mock-gen", tag = ["yes"]), embedder_kwargs = (;
-                model = "mock-emb")),
-        generator_kwargs = (;
-            answerer_kwargs = (; model = "mock-gen"), embedder_kwargs = (;
-                model = "mock-emb")),
-        api_kwargs = (; url = "http://localhost:$(PORT)"),
-        return_all = false)
-    @test occursin("Time?", msg.content)
+        ## E2E - with type
+        msg = airag(RAGConfig(), index; question = "Time?",
+            retriever_kwargs = (;
+                tagger_kwargs = (; model = "mock-gen", tag = ["yes"]), embedder_kwargs = (;
+                    model = "mock-emb")),
+            generator_kwargs = (;
+                answerer_kwargs = (; model = "mock-gen"), embedder_kwargs = (;
+                    model = "mock-emb")),
+            api_kwargs = (; url = "http://localhost:$(PORT)"),
+            return_all = false)
+        @test occursin("Time?", msg.content)
 
-    ## Return RAG result
-    result = airag(RAGConfig(), index; question = "Time?",
-        retriever_kwargs = (;
-            tagger_kwargs = (; model = "mock-gen", tag = ["yes"]), embedder_kwargs = (;
-                model = "mock-emb")),
-        generator_kwargs = (;
-            answerer_kwargs = (; model = "mock-gen"), embedder_kwargs = (;
-                model = "mock-emb")),
-        api_kwargs = (; url = "http://localhost:$(PORT)"),
-        return_all = true)
-    @test occursin("Time?", result.answer)
-    @test occursin("Time?", result.final_answer)
+        ## Return RAG result
+        result = airag(RAGConfig(), index; question = "Time?",
+            retriever_kwargs = (;
+                tagger_kwargs = (; model = "mock-gen", tag = ["yes"]), embedder_kwargs = (;
+                    model = "mock-emb")),
+            generator_kwargs = (;
+                answerer_kwargs = (; model = "mock-gen"), embedder_kwargs = (;
+                    model = "mock-emb")),
+            api_kwargs = (; url = "http://localhost:$(PORT)"),
+            return_all = true)
+        @test occursin("Time?", result.answer)
+        @test occursin("Time?", result.final_answer)
 
-    ## Pretty printing
-    io = IOBuffer()
-    PT.pprint(io, result)
-    result_str = String(take!(io))
-    expected_str = "--------------------\nQUESTION(s)\n--------------------\n- Time?\n\n--------------------\nANSWER\n--------------------\n# Question\n\nTime\n\n\n\n# Answer\n\n--------------------\nSOURCES\n--------------------\n1. .\n2. .\n3. .\n"
-    @test result_str == expected_str
-
-    # clean up
-    close(echo_server)
+        ## Pretty printing
+        io = IOBuffer()
+        PT.pprint(io, result)
+        result_str = String(take!(io))
+        expected_str = "--------------------\nQUESTION(s)\n--------------------\n- Time?\n\n--------------------\nANSWER\n--------------------\n# Question\n\nTime\n\n\n\n# Answer\n\n--------------------\nSOURCES\n--------------------\n1. .\n2. .\n3. .\n"
+        @test result_str == expected_str
+    finally
+        close(echo_server)
+    end
 end

@@ -158,71 +158,73 @@ end
         return HTTP.Response(200, JSON3.write(response))
     end
 
-    # Index setup
-    index = ChunkIndex(;
-        sources = [".", ".", "."],
-        chunks = ["a", "b", "c"],
-        embeddings = zeros(128, 3),
-        tags = vcat(trues(2, 2), falses(1, 2)),
-        tags_vocab = ["yes", "no"])
-    index.embeddings[1, 1] = 1
+    try
+        # Index setup
+        index = ChunkIndex(;
+            sources = [".", ".", "."],
+            chunks = ["a", "b", "c"],
+            embeddings = zeros(128, 3),
+            tags = vcat(trues(2, 2), falses(1, 2)),
+            tags_vocab = ["yes", "no"])
+        index.embeddings[1, 1] = 1
 
-    # Test for successful Q&A extraction from document chunks
-    qa_evals = build_qa_evals(chunks(index),
-        sources(index),
-        instructions = "Some instructions.",
-        model = "mock-qa",
-        api_kwargs = (; url = "http://localhost:$(PORT)"))
+        # Test for successful Q&A extraction from document chunks
+        qa_evals = build_qa_evals(chunks(index),
+            sources(index),
+            instructions = "Some instructions.",
+            model = "mock-qa",
+            api_kwargs = (; url = "http://localhost:$(PORT)"))
 
-    @test length(qa_evals) == length(chunks(index))
-    @test all(getproperty.(qa_evals, :source) .== ".")
-    @test all(getproperty.(qa_evals, :context) == ["a", "b", "c"])
-    @test all(getproperty.(qa_evals, :question) .== "Question")
-    @test all(getproperty.(qa_evals, :answer) .== "Answer")
+        @test length(qa_evals) == length(chunks(index))
+        @test all(getproperty.(qa_evals, :source) .== ".")
+        @test all(getproperty.(qa_evals, :context) == ["a", "b", "c"])
+        @test all(getproperty.(qa_evals, :question) .== "Question")
+        @test all(getproperty.(qa_evals, :answer) .== "Answer")
 
-    # Error checks
-    @test_throws AssertionError build_qa_evals(chunks(index),
-        String[])
-    @test_throws AssertionError build_qa_evals(chunks(index),
-        String[]; qa_template = :BlankSystemUser)
+        # Error checks
+        @test_throws AssertionError build_qa_evals(chunks(index),
+            String[])
+        @test_throws AssertionError build_qa_evals(chunks(index),
+            String[]; qa_template = :BlankSystemUser)
 
-    # Test run_qa_evals on 1 item
-    airag_kwargs = (;
-        retriever_kwargs = (;
-            tagger_kwargs = (; model = "mock-gen", tag = ["yes"]), embedder_kwargs = (;
-                model = "mock-emb")),
-        generator_kwargs = (;
-            answerer_kwargs = (; model = "mock-gen"), embedder_kwargs = (;
-                model = "mock-emb")))
-    result = airag(RAGConfig(), index; question = qa_evals[1].question,
-        airag_kwargs...,
-        api_kwargs = (; url = "http://localhost:$(PORT)"),
-        return_all = true)
+        # Test run_qa_evals on 1 item
+        airag_kwargs = (;
+            retriever_kwargs = (;
+                tagger_kwargs = (; model = "mock-gen", tag = ["yes"]), embedder_kwargs = (;
+                    model = "mock-emb")),
+            generator_kwargs = (;
+                answerer_kwargs = (; model = "mock-gen"), embedder_kwargs = (;
+                    model = "mock-emb")))
+        result = airag(RAGConfig(), index; question = qa_evals[1].question,
+            airag_kwargs...,
+            api_kwargs = (; url = "http://localhost:$(PORT)"),
+            return_all = true)
 
-    result = run_qa_evals(qa_evals[1], result;
-        model_judge = "mock-judge",
-        api_kwargs = (; url = "http://localhost:$(PORT)"),
-        parameters_dict = Dict(:key1 => "value1", :key2 => 2))
-    @test result.retrieval_score == 1.0
-    @test result.retrieval_rank == 1
-    @test result.answer_score == 5
-    @test result.parameters == Dict(:key1 => "value1", :key2 => 2)
+        result = run_qa_evals(qa_evals[1], result;
+            model_judge = "mock-judge",
+            api_kwargs = (; url = "http://localhost:$(PORT)"),
+            parameters_dict = Dict(:key1 => "value1", :key2 => 2))
+        @test result.retrieval_score == 1.0
+        @test result.retrieval_rank == 1
+        @test result.answer_score == 5
+        @test result.parameters == Dict(:key1 => "value1", :key2 => 2)
 
-    # Test all evals at once
-    # results = run_qa_evals(index, qa_evals; model_judge = "mock-judge",
-    #     api_kwargs = (; url = "http://localhost:$(PORT)"))
-    results = run_qa_evals(index, qa_evals;
-        airag_kwargs,
-        qa_evals_kwargs = (; model_judge = "mock-judge"),
-        api_kwargs = (; url = "http://localhost:$(PORT)"),
-        parameters_dict = Dict(:key1 => "value1", :key2 => 2))
+        # Test all evals at once
+        # results = run_qa_evals(index, qa_evals; model_judge = "mock-judge",
+        #     api_kwargs = (; url = "http://localhost:$(PORT)"))
+        results = run_qa_evals(index, qa_evals;
+            airag_kwargs,
+            qa_evals_kwargs = (; model_judge = "mock-judge"),
+            api_kwargs = (; url = "http://localhost:$(PORT)"),
+            parameters_dict = Dict(:key1 => "value1", :key2 => 2))
 
-    @test length(results) == length(qa_evals)
-    @test all(getproperty.(results, :retrieval_score) .== 1.0)
-    @test all(x -> x.retrieval_rank in [1, 2], results)
-    @test all(getproperty.(results, :answer_score) .== 5)
-    @test all(getproperty.(results, :parameters) .==
-              Ref(Dict(:key1 => "value1", :key2 => 2)))
-    # clean up
-    close(echo_server)
+        @test length(results) == length(qa_evals)
+        @test all(getproperty.(results, :retrieval_score) .== 1.0)
+        @test all(x -> x.retrieval_rank in [1, 2], results)
+        @test all(getproperty.(results, :answer_score) .== 5)
+        @test all(getproperty.(results, :parameters) .==
+                  Ref(Dict(:key1 => "value1", :key2 => 2)))
+    finally
+        close(echo_server)
+    end
 end

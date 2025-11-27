@@ -832,118 +832,119 @@ end
         return HTTP.Response(200, JSON3.write(response))
     end
 
-    embeddings1 = ones(Float32, 10, 4)
-    embeddings1[10, 3:4] .= 5.0
-    embeddings1 = mapreduce(normalize, hcat, eachcol(embeddings1))
-    index = ChunkIndex(id = :TestChunkIndex1,
-        chunks = ["chunk1", "chunk2", "chunk3", "chunk4"],
-        sources = ["source1", "source2", "source3", "source4"],
-        embeddings = embeddings1)
-    question = "test question"
+    try
+        embeddings1 = ones(Float32, 10, 4)
+        embeddings1[10, 3:4] .= 5.0
+        embeddings1 = mapreduce(normalize, hcat, eachcol(embeddings1))
+        index = ChunkIndex(id = :TestChunkIndex1,
+            chunks = ["chunk1", "chunk2", "chunk3", "chunk4"],
+            sources = ["source1", "source2", "source3", "source4"],
+            embeddings = embeddings1)
+        question = "test question"
 
-    ## Test with SimpleRetriever
-    simple = SimpleRetriever()
+        ## Test with SimpleRetriever
+        simple = SimpleRetriever()
 
-    result = retrieve(simple, index, question;
-        rephraser_kwargs = (; model = "mock-gen"),
-        embedder_kwargs = (; model = "mock-emb"),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    @test result.question == question
-    @test result.rephrased_questions == [question]
-    @test result.answer == nothing
-    @test result.final_answer == nothing
-    ## there are two equivalent orderings
-    @test Set(result.reranked_candidates.positions[1:2]) == Set([2, 1])
-    @test Set(result.reranked_candidates.positions[3:4]) == Set([3, 4])
-    @test result.reranked_candidates.scores[1:2] == ones(2)
-    @test length(result.context) == 4
-    @test length(unique(result.context)) == 4
-    @test result.context[1] in ["chunk2", "chunk1"]
-    @test result.context[2] in ["chunk2", "chunk1"]
-    @test result.context[3] in ["chunk3", "chunk4"]
-    @test result.context[4] in ["chunk3", "chunk4"]
-    @test result.sources isa Vector{String}
+        result = retrieve(simple, index, question;
+            rephraser_kwargs = (; model = "mock-gen"),
+            embedder_kwargs = (; model = "mock-emb"),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        @test result.question == question
+        @test result.rephrased_questions == [question]
+        @test result.answer == nothing
+        @test result.final_answer == nothing
+        ## there are two equivalent orderings
+        @test Set(result.reranked_candidates.positions[1:2]) == Set([2, 1])
+        @test Set(result.reranked_candidates.positions[3:4]) == Set([3, 4])
+        @test result.reranked_candidates.scores[1:2] == ones(2)
+        @test length(result.context) == 4
+        @test length(unique(result.context)) == 4
+        @test result.context[1] in ["chunk2", "chunk1"]
+        @test result.context[2] in ["chunk2", "chunk1"]
+        @test result.context[3] in ["chunk3", "chunk4"]
+        @test result.context[4] in ["chunk3", "chunk4"]
+        @test result.sources isa Vector{String}
 
-    # Reduce number of candidates
-    result = retrieve(simple, index, question;
-        top_n = 2, top_k = 3,
-        rephraser_kwargs = (; model = "mock-gen"),
-        embedder_kwargs = (; model = "mock-emb"),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    ## the last item is 3 or 4
-    @test result.emb_candidates.positions[3] in [3, 4]
-    @test Set(result.reranked_candidates.positions[1:2]) == Set([2, 1])
-    @test result.emb_candidates.scores[1:2] == ones(2)
+        # Reduce number of candidates
+        result = retrieve(simple, index, question;
+            top_n = 2, top_k = 3,
+            rephraser_kwargs = (; model = "mock-gen"),
+            embedder_kwargs = (; model = "mock-emb"),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        ## the last item is 3 or 4
+        @test result.emb_candidates.positions[3] in [3, 4]
+        @test Set(result.reranked_candidates.positions[1:2]) == Set([2, 1])
+        @test result.emb_candidates.scores[1:2] == ones(2)
 
-    # with default dispatch
-    result = retrieve(index, question;
-        top_n = 2, top_k = 3,
-        rephraser_kwargs = (; model = "mock-gen"),
-        embedder_kwargs = (; model = "mock-emb"),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    @test result.emb_candidates.positions[3] in [3, 4]
-    @test result.emb_candidates.scores[1:2] == ones(2)
-    @test Set(result.reranked_candidates.positions[1:2]) == Set([2, 1])
+        # with default dispatch
+        result = retrieve(index, question;
+            top_n = 2, top_k = 3,
+            rephraser_kwargs = (; model = "mock-gen"),
+            embedder_kwargs = (; model = "mock-emb"),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        @test result.emb_candidates.positions[3] in [3, 4]
+        @test result.emb_candidates.scores[1:2] == ones(2)
+        @test Set(result.reranked_candidates.positions[1:2]) == Set([2, 1])
 
-    ## AdvancedRetriever
-    adv = AdvancedRetriever()
-    result = retrieve(adv, index, question;
-        reranker = NoReranker(), # we need to disable cohere as we cannot test it
-        rephraser_kwargs = (; model = "mock-gen"),
-        embedder_kwargs = (; model = "mock-emb2"),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    @test result.question == question
-    @test result.rephrased_questions == [question, "Query: test question\n\nPassage:"] # from the template we use
-    @test result.answer == nothing
-    @test result.final_answer == nothing
-    ## there are two equivalent orderings
-    @test Set(result.reranked_candidates.positions[1:2]) == Set([2, 1])
-    @test Set(result.reranked_candidates.positions[3:4]) == Set([3, 4])
-    @test result.reranked_candidates.scores[1:2] == ones(2)
-    @test length(result.context) == 4
-    @test length(unique(result.context)) == 4
-    @test result.context[1] in ["chunk2", "chunk1"]
-    @test result.context[2] in ["chunk2", "chunk1"]
-    @test result.context[3] in ["chunk3", "chunk4"]
-    @test result.context[4] in ["chunk3", "chunk4"]
-    @test result.sources isa Vector{String}
+        ## AdvancedRetriever
+        adv = AdvancedRetriever()
+        result = retrieve(adv, index, question;
+            reranker = NoReranker(), # we need to disable cohere as we cannot test it
+            rephraser_kwargs = (; model = "mock-gen"),
+            embedder_kwargs = (; model = "mock-emb2"),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        @test result.question == question
+        @test result.rephrased_questions == [question, "Query: test question\n\nPassage:"] # from the template we use
+        @test result.answer == nothing
+        @test result.final_answer == nothing
+        ## there are two equivalent orderings
+        @test Set(result.reranked_candidates.positions[1:2]) == Set([2, 1])
+        @test Set(result.reranked_candidates.positions[3:4]) == Set([3, 4])
+        @test result.reranked_candidates.scores[1:2] == ones(2)
+        @test length(result.context) == 4
+        @test length(unique(result.context)) == 4
+        @test result.context[1] in ["chunk2", "chunk1"]
+        @test result.context[2] in ["chunk2", "chunk1"]
+        @test result.context[3] in ["chunk3", "chunk4"]
+        @test result.context[4] in ["chunk3", "chunk4"]
+        @test result.sources isa Vector{String}
 
-    # Multi-index retriever
-    index_keywords = ChunkKeywordsIndex(index, index_id = :TestChunkIndexX)
-    index_keywords = ChunkIndex(; id = :AA, index.chunks, index.sources, index.embeddings)
-    # Create MultiIndex instance
-    multi_index = MultiIndex(id = :multi, indexes = [index, index_keywords])
+        # Multi-index retriever
+        index_keywords = ChunkKeywordsIndex(index, index_id = :TestChunkIndexX)
+        index_keywords = ChunkIndex(; id = :AA, index.chunks, index.sources, index.embeddings)
+        # Create MultiIndex instance
+        multi_index = MultiIndex(id = :multi, indexes = [index, index_keywords])
 
-    # Create MultiFinder instance
-    finder = MultiFinder([RT.CosineSimilarity(), RT.BM25Similarity()])
+        # Create MultiFinder instance
+        finder = MultiFinder([RT.CosineSimilarity(), RT.BM25Similarity()])
 
-    retriever = SimpleRetriever(; processor = RT.KeywordsProcessor(), finder)
-    result = retrieve(SimpleRetriever(), multi_index, question;
-        reranker = NoReranker(), # we need to disable cohere as we cannot test it
-        rephraser_kwargs = (; model = "mock-gen"),
-        embedder_kwargs = (; model = "mock-emb"),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    @test result.question == question
-    @test result.rephrased_questions == [question]
-    @test result.answer == nothing
-    @test result.final_answer == nothing
-    ## there are two equivalent orderings
-    @test Set(result.reranked_candidates.positions[1:4]) == Set([2, 1])
-    @test result.reranked_candidates.positions[5] in [3, 4]
-    @test result.reranked_candidates.scores[1:4] == ones(4)
-    @test length(result.context) == 5 # because the second index duplicates, so we have more
-    @test length(unique(result.context)) == 3 # only 3 unique chunks because 1,2,1,2,3
-    @test all([result.context[i] in ["chunk2", "chunk1"] for i in 1:4])
-    @test result.context[5] in ["chunk3", "chunk4"]
-    @test length(unique(result.sources)) == 3
-    @test all([result.sources[i] in ["source2", "source1"] for i in 1:4])
-    @test result.sources[5] in ["source3", "source4"]
-
-    # clean up
-    close(echo_server)
+        retriever = SimpleRetriever(; processor = RT.KeywordsProcessor(), finder)
+        result = retrieve(SimpleRetriever(), multi_index, question;
+            reranker = NoReranker(), # we need to disable cohere as we cannot test it
+            rephraser_kwargs = (; model = "mock-gen"),
+            embedder_kwargs = (; model = "mock-emb"),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        @test result.question == question
+        @test result.rephrased_questions == [question]
+        @test result.answer == nothing
+        @test result.final_answer == nothing
+        ## there are two equivalent orderings
+        @test Set(result.reranked_candidates.positions[1:4]) == Set([2, 1])
+        @test result.reranked_candidates.positions[5] in [3, 4]
+        @test result.reranked_candidates.scores[1:4] == ones(4)
+        @test length(result.context) == 5 # because the second index duplicates, so we have more
+        @test length(unique(result.context)) == 3 # only 3 unique chunks because 1,2,1,2,3
+        @test all([result.context[i] in ["chunk2", "chunk1"] for i in 1:4])
+        @test result.context[5] in ["chunk3", "chunk4"]
+        @test length(unique(result.sources)) == 3
+        @test all([result.sources[i] in ["source2", "source1"] for i in 1:4])
+        @test result.sources[5] in ["source3", "source4"]
+    finally
+        close(echo_server)
+    end
 end

@@ -65,12 +65,12 @@ end
     @test_throws AssertionError get_embeddings(BitPackedBatchEmbedder(), String[])
 
     # corresponds to OpenAI API v1
-    response1 = Dict(:data => [Dict(:embedding => ones(128, 2))],
+    docs = ["Hello World", "Hello World"]
+    response1 = Dict(:data => [Dict(:embedding => ones(Float32, 128))
+                                for i in 1:length(docs)],
         :usage => Dict(:total_tokens => 2, :prompt_tokens => 2, :completion_tokens => 0))
     schema = TestEchoOpenAISchema(; response = response1, status = 200)
     PT.register_model!(; name = "mock-emb", schema)
-
-    docs = ["Hello World", "Hello World"]
     output = get_embeddings(
         BatchEmbedder(), docs; model = "mock-emb", truncate_dimension = 100)
     @test size(output) == (100, 2)
@@ -333,89 +333,90 @@ end
         return HTTP.Response(200, JSON3.write(response))
     end
 
-    text = "This is a long text that will be split into chunks.\n\n It will be split by the separator. And also by the separator '\n'."
+    try
+        text = "This is a long text that will be split into chunks.\n\n It will be split by the separator. And also by the separator '\n'."
 
-    ## Default - file reader
-    tmp, _ = mktemp()
-    write(tmp, text)
-    mini_files = [tmp, tmp]
-    indexer = SimpleIndexer()
-    index = build_index(
-        indexer, mini_files; chunker = FileChunker(), chunker_kwargs = (; max_length = 10),
-        embedder_kwargs = (; model = "mock-emb"),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    @test index.embeddings ==
-          hcat(fill(normalize(ones(Float32, 128)), length(index.chunks))...)
-    @test index.chunks[begin:(length(index.chunks) ÷ 2)] ==
-          index.chunks[((length(index.chunks) ÷ 2) + 1):end]
-    @test index.sources == fill(tmp, length(index.chunks))
-    @test index.tags == nothing
-    @test index.tags_vocab == nothing
+        ## Default - file reader
+        tmp, _ = mktemp()
+        write(tmp, text)
+        mini_files = [tmp, tmp]
+        indexer = SimpleIndexer()
+        index = build_index(
+            indexer, mini_files; chunker = FileChunker(), chunker_kwargs = (; max_length = 10),
+            embedder_kwargs = (; model = "mock-emb"),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        @test index.embeddings ==
+              hcat(fill(normalize(ones(Float32, 128)), length(index.chunks))...)
+        @test index.chunks[begin:(length(index.chunks) ÷ 2)] ==
+              index.chunks[((length(index.chunks) ÷ 2) + 1):end]
+        @test index.sources == fill(tmp, length(index.chunks))
+        @test index.tags == nothing
+        @test index.tags_vocab == nothing
 
-    ## With metadata
-    indexer = SimpleIndexer(; chunker = FileChunker(), tagger = OpenTagger())
-    index = build_index(indexer, mini_files; chunker_kwargs = (; max_length = 10),
-        embedder_kwargs = (; model = "mock-emb"),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    @test index.tags == ones(30, 1)
-    @test index.tags_vocab == ["category:::yes"]
+        ## With metadata
+        indexer = SimpleIndexer(; chunker = FileChunker(), tagger = OpenTagger())
+        index = build_index(indexer, mini_files; chunker_kwargs = (; max_length = 10),
+            embedder_kwargs = (; model = "mock-emb"),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        @test index.tags == ones(30, 1)
+        @test index.tags_vocab == ["category:::yes"]
 
-    ## Test docs reader - customize via kwarg
-    indexer = SimpleIndexer()
-    index = build_index(indexer, [text, text]; chunker = TextChunker(),
-        chunker_kwargs = (;
-            sources = ["x", "x"], max_length = 10),
-        embedder_kwargs = (; model = "mock-emb"),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    @test index.embeddings ==
-          hcat(fill(normalize(ones(Float32, 128)), length(index.chunks))...)
-    @test index.chunks[begin:(length(index.chunks) ÷ 2)] ==
-          index.chunks[((length(index.chunks) ÷ 2) + 1):end]
-    @test index.sources == fill("x", length(index.chunks))
-    @test index.tags == nothing
-    @test index.tags_vocab == nothing
+        ## Test docs reader - customize via kwarg
+        indexer = SimpleIndexer()
+        index = build_index(indexer, [text, text]; chunker = TextChunker(),
+            chunker_kwargs = (;
+                sources = ["x", "x"], max_length = 10),
+            embedder_kwargs = (; model = "mock-emb"),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        @test index.embeddings ==
+              hcat(fill(normalize(ones(Float32, 128)), length(index.chunks))...)
+        @test index.chunks[begin:(length(index.chunks) ÷ 2)] ==
+              index.chunks[((length(index.chunks) ÷ 2) + 1):end]
+        @test index.sources == fill("x", length(index.chunks))
+        @test index.tags == nothing
+        @test index.tags_vocab == nothing
 
-    # Test default behavior - text chunker
-    index = build_index([text, text];
-        chunker_kwargs = (;
-            sources = ["x", "x"], max_length = 10),
-        embedder_kwargs = (; model = "mock-emb"),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    @test index.embeddings ==
-          hcat(fill(normalize(ones(Float32, 128)), length(index.chunks))...)
-    @test index.chunks[begin:(length(index.chunks) ÷ 2)] ==
-          index.chunks[((length(index.chunks) ÷ 2) + 1):end]
-    @test index.sources == fill("x", length(index.chunks))
-    @test index.tags == nothing
-    @test index.tags_vocab == nothing
+        # Test default behavior - text chunker
+        index = build_index([text, text];
+            chunker_kwargs = (;
+                sources = ["x", "x"], max_length = 10),
+            embedder_kwargs = (; model = "mock-emb"),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        @test index.embeddings ==
+              hcat(fill(normalize(ones(Float32, 128)), length(index.chunks))...)
+        @test index.chunks[begin:(length(index.chunks) ÷ 2)] ==
+              index.chunks[((length(index.chunks) ÷ 2) + 1):end]
+        @test index.sources == fill("x", length(index.chunks))
+        @test index.tags == nothing
+        @test index.tags_vocab == nothing
 
-    # ChunkKeywordsIndex
-    index_keywords = ChunkKeywordsIndex(index)
-    @test chunkdata(index_keywords) isa DocumentTermMatrix
-    @test length(chunkdata(index_keywords).vocab) == 7
-    @test size(chunkdata(index_keywords).tf) == (30, 7)
-    @test index_keywords.chunks == index.chunks
-    @test index_keywords.sources == index.sources
-    @test index_keywords.tags == index.tags
-    @test index_keywords.tags_vocab == index.tags_vocab
-    @test index_keywords.sources == index.sources
-    @test index_keywords.extras == index.extras
+        # ChunkKeywordsIndex
+        index_keywords = ChunkKeywordsIndex(index)
+        @test chunkdata(index_keywords) isa DocumentTermMatrix
+        @test length(chunkdata(index_keywords).vocab) == 7
+        @test size(chunkdata(index_keywords).tf) == (30, 7)
+        @test index_keywords.chunks == index.chunks
+        @test index_keywords.sources == index.sources
+        @test index_keywords.tags == index.tags
+        @test index_keywords.tags_vocab == index.tags_vocab
+        @test index_keywords.sources == index.sources
+        @test index_keywords.extras == index.extras
 
-    # Keywords-based index
-    index = build_index(KeywordsIndexer(), [text, text];
-        chunker_kwargs = (;
-            sources = ["x", "x"], max_length = 10),
-        tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
-            url = "http://localhost:$(PORT)"))
-    dtm = chunkdata(index)
-    @test dtm isa DocumentTermMatrix
-    @test length(dtm.vocab) == 7
-    @test size(dtm.tf) == (30, 7)
-
-    # clean up
-    close(echo_server)
+        # Keywords-based index
+        index = build_index(KeywordsIndexer(), [text, text];
+            chunker_kwargs = (;
+                sources = ["x", "x"], max_length = 10),
+            tagger_kwargs = (; model = "mock-meta"), api_kwargs = (;
+                url = "http://localhost:$(PORT)"))
+        dtm = chunkdata(index)
+        @test dtm isa DocumentTermMatrix
+        @test length(dtm.vocab) == 7
+        @test size(dtm.tf) == (30, 7)
+    finally
+        close(echo_server)
+    end
 end

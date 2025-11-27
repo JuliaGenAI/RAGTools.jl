@@ -9,6 +9,10 @@ using Aqua
 const PT = PromptingTools
 const RT = RAGTools
 
+# Set a dummy API key for tests using CustomOpenAISchema with mock HTTP servers
+# Required since OpenAI.jl now throws an error when api_key is empty
+ENV["OPENAI_API_KEY"] = get(ENV, "OPENAI_API_KEY", "test-api-key-for-mock-server")
+
 @testset "RAGTools.jl" begin
     @testset "Code quality (Aqua.jl)" begin
         Aqua.test_all(RAGTools)

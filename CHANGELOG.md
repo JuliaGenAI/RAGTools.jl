@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Fixed
+- Fixed `find_closest` with a single query embedding on Julia 1.13 (eg, `airag` with the default `NoRephraser`): `mapreduce(f, vcat, xs)` now calls `vcat` on a lone element, so it returned a `Vector{CandidateChunks}`, which `rerank` has no method for. Added `Base.vcat(cc::AbstractCandidateChunks) = cc`.
+
+### Updated
+- Increased compat for PromptingTools to include v0.95
 
 ## [0.10.0]
 

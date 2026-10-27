@@ -13,6 +13,10 @@ function Base.vcat(cc1::AbstractCandidateChunks, cc2::AbstractCandidateChunks)
     throw(ArgumentError("Not implemented for type $(typeof(cc1)) and $(typeof(cc2))"))
 end
 
+# A single candidate set is returned as is. Since Julia 1.13, `mapreduce(f, vcat, xs)` calls `vcat` on
+# the only element when `xs` has one, eg, in `find_closest` with a single query embedding.
+Base.vcat(cc::AbstractCandidateChunks) = cc
+
 # combine/intersect two candidate chunks. take the maximum of the score if available
 function Base.var"&"(cc1::AbstractCandidateChunks, cc2::AbstractCandidateChunks)
     throw(ArgumentError("Not implemented for type $(typeof(cc1)) and $(typeof(cc2))"))

@@ -64,6 +64,9 @@ using RAGTools: indexid, indexids, positions, scores
     @test_throws ArgumentError vcat(cc1, cc4)
     # uknown type
     @test_throws ArgumentError vcat(cc1, RandomCandidateChunks123())
+    # single candidate set (as in `mapreduce(f, vcat, xs)` with one element)
+    @test vcat(cc1) === cc1
+    @test mapreduce(identity, vcat, [cc1]) == cc1
 
     # Test copy
     cc1_copy = copy(cc1)
@@ -103,6 +106,9 @@ end
             scores = [0.3, 0.5]))
     @test vcat2.positions == [4, 1, 3]
     @test vcat2.scores == [0.5, 0.3, 0.2]
+    # single candidate set (as in `mapreduce(f, vcat, xs)` with one element)
+    @test vcat(mcc1) === mcc1
+    @test mapreduce(identity, vcat, [mcc1]) == mcc1
 
     # Test copy
     mcc1_copy = copy(mcc1)

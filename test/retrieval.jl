@@ -366,6 +366,10 @@ end
     result = find_closest(finder, ci1, query_emb[:, 1]; top_k = 1)
     @test result.positions == [1]
     @test result.scores == [1.0]
+    # a matrix with a single query embedding gives a CandidateChunks too
+    result = find_closest(finder, ci1, query_emb[:, 1:1]; top_k = 1)
+    @test result isa CandidateChunks
+    @test result.positions == [1]
 
     ### For Binary embeddings
     # Test for correct retrieval of closest positions and scores
